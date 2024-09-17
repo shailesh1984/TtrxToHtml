@@ -1,14 +1,20 @@
-﻿using Newtonsoft.Json;
-using System.Xml;
-using System.Xml.Linq;
-using TtrxToHtml.Console;
-
-public class Program
+﻿public class Program
 {
-    private static void Main(string[] args)
+    private const string TemplatesFolder = "Templates";
+
+    private static async Task Main(string[] args)
     {
-        var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console";
+        var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console"; // need to modify
         string json = TrxHelper.CombineAllTrxFilesToOneTrx(sourceDirectory);
+
+        var res = JsonConvert.DeserializeObject<JsonData>(json)!;
+        
+        var razorTemplateEngine = new TemplateEngine();
+        var htmlContent = await razorTemplateEngine.RenderTemplateAsync(res);
+
+        var tempFile = Path.Combine(Path.GetTempPath(), "temp.html");
+        await File.WriteAllTextAsync(tempFile, htmlContent);
+        Process.Start(@"cmd.exe ", $@"/c {tempFile}");
     }
 }
 

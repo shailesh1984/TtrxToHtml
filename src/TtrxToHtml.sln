@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TtrxToHtml.Console", "TtrxToHtml.Console\TtrxToHtml.Console.csproj", "{9DF09736-DA91-4E38-BE19-A3430DAD525F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TtrxToHtml.Console", "TtrxToHtml.Console\TtrxToHtml.Console.csproj", "{9DF09736-DA91-4E38-BE19-A3430DAD525F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TtrxToHtml.PageTemplateEngine", "TtrxToHtml.PageTemplateEngine\TtrxToHtml.PageTemplateEngine.csproj", "{F8FE61D2-72B4-4DE3-BA03-BE8D57B64EEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9DF09736-DA91-4E38-BE19-A3430DAD525F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DF09736-DA91-4E38-BE19-A3430DAD525F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DF09736-DA91-4E38-BE19-A3430DAD525F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8FE61D2-72B4-4DE3-BA03-BE8D57B64EEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8FE61D2-72B4-4DE3-BA03-BE8D57B64EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8FE61D2-72B4-4DE3-BA03-BE8D57B64EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8FE61D2-72B4-4DE3-BA03-BE8D57B64EEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,32 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="exapmle1.trx" />
-    <None Remove="exapmle2.trx" />
-  </ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="Contents\bootstrap-5.3.3\**" />
+	  <EmbeddedResource Remove="Contents\bootstrap-5.3.3\**" />
+	  <None Remove="Contents\bootstrap-5.3.3\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="exapmle2.trx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="exapmle1.trx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="Contents\bootstrap-3.3.7\css\bootstrap.min.css" />
+		<None Remove="Contents\bootstrap-3.3.7\js\bootstrap.min.js" />
+		<None Remove="Contents\font-awesome-4.7.0\font-awesome.min.css" />
+		<None Remove="Contents\font-awesome.min.css" />
+		<None Remove="Contents\jquery-3.1.1.min.js" />
+		<None Remove="Contents\style.css" />
+		<None Remove="exapmle1.trx" />
+		<None Remove="exapmle2.trx" />
+		<None Remove="Templates\JsonData.cshtml" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="Contents\bootstrap-3.3.7\css\bootstrap.min.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\bootstrap-3.3.7\js\bootstrap.min.js">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\font-awesome-4.7.0\font-awesome.min.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\jquery-3.1.1.min.js">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\style.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="exapmle2.trx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="exapmle1.trx">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<EmbeddedResource Include="Templates\JsonData.cshtml">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\TtrxToHtml.PageTemplateEngine\TtrxToHtml.PageTemplateEngine.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="RazorLight" Version="2.3.1" />
+	</ItemGroup>
 
 </Project>

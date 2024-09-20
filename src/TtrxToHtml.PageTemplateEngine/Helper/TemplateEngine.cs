@@ -1,4 +1,10 @@
-﻿namespace TtrxToHtml.PageTemplateEngine.Helper;
+﻿using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Razor.Language;
+using System.IO;
+using System.Reflection;
+
+namespace TtrxToHtml.PageTemplateEngine.Helper;
 
 public sealed class TemplateEngine
 {
@@ -8,15 +14,23 @@ public sealed class TemplateEngine
 
     public TemplateEngine()
     {
-        var thisAssembly = Assembly.GetExecutingAssembly();
-        var viewAssembly = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, false); //.Single();
+        //var thisAssembly = Assembly.GetExecutingAssembly();
+        //var viewAssembly = RelatedAssemblyAttribute.GetRelatedAssemblies(thisAssembly, false).Single();
         //var razorCompiledItems = new RazorCompiledItemLoader().LoadItems(viewAssembly);
 
         //foreach (var item in razorCompiledItems)
         //{
         //    _razorCompiledItems.Add(item.Identifier, item);
         //}
+
+        //var localPath = Server.MapPath("~/Views/Demos/SomePartialView.cshtml");
+
+        string filePath = Path.GetFullPath(@"Templates\JsonData.cshtml");
+
+        //var ll = Path.Combine(PathHelpers.CurrentOutPutDirectory, @"Templates\JsonData.cshtml");
+
     }
+
 
     public async Task<string> RenderTemplateAsync<TModel>(TModel model)
     {

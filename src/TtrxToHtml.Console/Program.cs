@@ -17,7 +17,16 @@
         string html = await engine.CompileRenderAsync("JsonData", model);
 
         var path = AppDomain.CurrentDomain.BaseDirectory;
-        var testReportFile = Path.Combine(path, "TestReportFile.html");
+        var dateTime = DateTime.Now.ToString("yyyy-dd-M-HH-mm-ss");
+
+        string directoryPath = Path.Combine(path, "Test_Reports");
+
+        bool exists = Directory.Exists(directoryPath);
+
+        if (!exists)
+            Directory.CreateDirectory(directoryPath);
+
+        var testReportFile = Path.Combine(directoryPath, @"TestReportFile_"+ dateTime + ".html");
         await File.WriteAllTextAsync(testReportFile, html);
         Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
     }

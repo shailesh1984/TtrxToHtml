@@ -15,25 +15,44 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Contents\bootstrap-3.3.7\css\bootstrap.min.css" />
-		<None Remove="Contents\bootstrap-3.3.7\js\bootstrap.min.js" />
 		<None Remove="Contents\font-awesome-4.7.0\font-awesome.min.css" />
 		<None Remove="Contents\font-awesome.min.css" />
+		<None Remove="Contents\fonts\Roboto-Black.ttf" />
+		<None Remove="Contents\fonts\Roboto-Bold.ttf" />
+		<None Remove="Contents\fonts\Roboto-Light.ttf" />
+		<None Remove="Contents\fonts\Roboto-Medium.ttf" />
+		<None Remove="Contents\fonts\Roboto-Regular.ttf" />
+		<None Remove="Contents\fonts\Roboto-Thin.ttf" />
 		<None Remove="Contents\jquery-3.1.1.min.js" />
 		<None Remove="Contents\style.css" />
+		<None Remove="Contents\tailwind\tailwind.min.css" />
+		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
 		<None Remove="exapmle1.trx" />
 		<None Remove="exapmle2.trx" />
+		<None Remove="Templates\JsonData - Copy.cshtml" />
 		<None Remove="Templates\JsonData.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Contents\bootstrap-3.3.7\css\bootstrap.min.css">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Contents\bootstrap-3.3.7\js\bootstrap.min.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Contents\font-awesome-4.7.0\font-awesome.min.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Black.ttf">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Bold.ttf">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Light.ttf">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Medium.ttf">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Regular.ttf">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\fonts\Roboto-Thin.ttf">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Contents\jquery-3.1.1.min.js">
@@ -42,12 +61,23 @@
 		<Content Include="Contents\style.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="exapmle2.trx">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<Content Include="Contents\tailwind\tailwind.min.css">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Contents\tailwind\tailwindcss-3.4.5.js">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="exapmle1.trx">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+		<Content Include="exapmle2.trx">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<EmbeddedResource Include="Templates\JsonData - Copy.cshtml">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</EmbeddedResource>
 		<EmbeddedResource Include="Templates\JsonData.cshtml">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>

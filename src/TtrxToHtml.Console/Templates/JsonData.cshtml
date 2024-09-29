@@ -1,9 +1,70 @@
 ﻿@model TtrxToHtml.Console.Models.JsonData;
 
+@using System.Globalization
+@using TtrxToHtml.Console.Models;
+
 @{
-    string GetClassName()
+    string badgeColor = string.Empty, badgeDot = string.Empty;
+
+    // @functions {
+    //     enum TestStatus {
+    //         Failed,
+    //         Passed,
+    //         Warn
+    //     }
+    // }
+
+    // int GetTestStatus(string status)
+    // {
+    //     switch (status)
+    //     {
+    //         case nameof(@TtrxToHtml.Console.Models.Outcome.Failed):
+    //             return (int)@TtrxToHtml.Console.Models.Outcome.Failed;
+    //         case nameof(@TtrxToHtml.Console.Models.Outcome.Passed):
+    //             return (int)@TtrxToHtml.Console.Models.Outcome.Passed;
+    //         case nameof(@TtrxToHtml.Console.Models.Outcome.Warn):
+    //             return (int)@TtrxToHtml.Console.Models.Outcome.Warn;
+    //         default:
+    //             return -1;
+    //     }
+    // }
+
+    DateTime GetShortDateTime(string time)
     {
-        return "btn btn-primary";
+        if (string.IsNullOrEmpty(time))
+        {
+            return default(DateTime);
+        }
+
+        return DateTime.Parse(time).ToUniversalTime();
+    }
+
+    string ToExactTimeDefinition(string start, string finish)
+    {
+        TimeSpan datetime = GetShortDateTime(finish) - GetShortDateTime(start);
+        return ToExtactTime(datetime.TotalMilliseconds);
+    }
+
+    Duration ToExactTimeDuration(string duration)
+    {
+        var inSeconds = TimeSpan.FromMilliseconds(TimeSpan.Parse(duration).TotalMilliseconds).TotalSeconds.ToString();
+        var inMilliSeconds = ToExtactTime(TimeSpan.Parse(duration).TotalMilliseconds);
+
+        return new Duration(inSeconds, inMilliSeconds); //String.Format(CultureInfo.InvariantCulture, "{0:0.00}", inSeconds)
+    }
+
+    string ToExtactTime(double ms)
+    {
+        if (ms < 1000)
+            return ms + " ms";
+
+        if (ms >= 1000 && ms < 60000)
+            return string.Format("{0:0.00} seconds", TimeSpan.FromMilliseconds(ms).TotalSeconds);
+
+        if (ms >= 60000 && ms < 3600000)
+            return string.Format("{0:0.00} minutes", TimeSpan.FromMilliseconds(ms).TotalMinutes);
+
+        return string.Format("{0:0.00} hours", TimeSpan.FromMilliseconds(ms).TotalHours);
     }
 }
 
@@ -15,6 +76,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Test Report</title>
     <link rel="stylesheet" href="./../Contents/style.css">
+    <script defer src="./../Contents/alpinejs/alpinejs.cdn.min.js"></script>
     <script src="./../Contents/tailwind/tailwindcss-3.4.5.js"></script>
     <script>
         tailwind.config = {
@@ -39,28 +101,79 @@
             }
         }
     </script>
+    <style type="text/tailwindcss">
+        @@layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+        }
+
+        .test-results-table-th {
+            @@apply px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider;
+        }
+
+        .stacktrace-detail-content {
+            @@apply list-none m-0 p-0 [&>li]:flex [&>li]:flex-row [&>li]:border-dashed [&>li]:border-2 [&>li]:border-[#337ab7] [&>li]:border-y-0 [&>li]:border-r-0 [&>li]:border-l-2 first:[&>li]:pt-1.5 last:[&>li]:ml-2.5 first:[&>li>div]:-ml-0.5 first:[&>li>div]:bg-white;
+        }
+
+        .stacktrace-detail {
+            @@apply m-0 pt-0 pr-4 pb-1.5 pl-0 grow basis-full first:border-t-2 first:border-dashed first:border-[#337ab7] first:basis-8 first:mt-9;
+        }
+
+        .stacktrace-detail-main {
+            @@apply m-0 pt-0 pr-4 pb-1.5 pl-0 grow basis-full;
+        }
+
+        .stacktrace-detail-main-fieldset {
+            @@apply border-solid border-2 border-[#007BFF] rounded-md mb-2.5 py-2.5 px-5;
+        }
+
+        .stacktrace-detail-main-legend {
+            @@apply ml-1.5 bg-[#007BFF] text-white py-1.5 px-2.5 rounded-md font-bold;
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    <script>
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("btnClick", () => ({
+                //isSvgRotate: false,
+
+                triggerBtn: {
+                    ["@@click"](el) {
+                        let svgEle = el.target;
+
+                        let clickedTrNextEle =
+                            this.$el.parentNode.parentElement.nextElementSibling;
+
+                        if (clickedTrNextEle.className === "hidden") {
+                            clickedTrNextEle.classList.add("table-row");
+                            clickedTrNextEle.classList.remove("hidden");
+                            svgEle.classList.add("rotate-90", "duration-300");
+                        } else {
+                            clickedTrNextEle.classList.add("hidden");
+                            clickedTrNextEle.classList.remove("table-row");
+                            svgEle.classList.remove("rotate-90");
+                        }
+                    },
+                },
+            }));
+        });
+    </script>
 </head>
-<body class="bg-white font-roboto text-base tracking-wide text-[#39464e]">
-    @* <div class="divTableBody @GetClassName()">
-
+<body class="bg-white font-roboto text-base tracking-wide text-[#39464e] antialiased">
     @foreach (var testRun in Model.TestResults.TestRun)
     {
-    <div class="divTableRow">
-    <div class="divTableCell">@testRun.Name</div>
-    </div>
-    }
-    *@
+        var totalClasses = testRun.TestDefinitions.UnitTest
+            .Select(f => f.TestMethod.ClassName.Split(',')[0]).Distinct();
 
-    @* <header class="min-h-12 mb-5 p-[15px] border border-b-slate-300 border-[#e7e7e7] bg-[#f8f8f8] top-0">
-    <h3>Test Results</h3>
-    </header>
-
-    <div class="lg:container mx-auto flex w-full flex-wrap items-center justify-between px-3 text-teal">
-    Hello world!
-    </div> *@
-
-    @foreach (var testRun in Model.TestResults.TestRun)
-    {
+        var groupedByClasses = testRun.TestDefinitions.UnitTest
+            .GroupBy(u => u.TestMethod.ClassName)
+            .Select(grp => grp.ToList())
+            .AsEnumerable();
+ 
         <header class="text-gray-700 body-font border-b border-gray-200">
             <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
                 <div class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
@@ -75,8 +188,9 @@
             <div class="container px-5 py-24 mx-auto">
                 <div class="flex flex-wrap -m-4">
                     <div class="p-4 md:w-1/3">
-                        <div class="flex rounded-lg h-full bg-gray-100 flex-col">
-                            <div class="flex items-center p-6">
+                        <div class="flex flex-col border-solid border-2 border-indigo-200 rounded-t-lg">
+                            @* h-full *@
+                            <div class="flex items-center rounded-t-lg bg-slate-100 p-4 border-b-[3px] border-indigo-200">
                                 <div class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-indigo-500 text-white flex-shrink-0">
                                     <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
@@ -86,17 +200,19 @@
                             </div>
                             <div class="flex-grow">
                                 <div class="container mx-auto flex flex-wrap">
-                                    <div class="flex lg:w-full w-full flex-wrap"> @* lg:border rounded-lg *@
-                                        <div class="lg:w-1/4 w-full mb-10 lg:mb-0"> @* lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none *@
-                                            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">User</p>
-                                            <p class="bg-slate-50 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">Machine</p>
-                                            <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">Description</p>
+                                    <div class="flex lg:w-full w-full flex-wrap">
+                                        @* lg:border rounded-lg *@
+                                        <div class="lg:w-1/4 w-full mb-10 lg:mb-0">
+                                            @* lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none *@
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">User</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Machine</p>
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Description</p>
                                         </div>
                                         <div class="lg:w-3/4 w-full mb-10 lg:mb-0">
                                             @* lg:-mt-px border-2 rounded-lg border-indigo-500 relative*@
-                                            <p class="bg-gray-100 text-gray-600 h-12 text-center px-4 flex items-center justify-start -mt-px text-sm">@testRun.RunUser</p> @* border-t border-gray-300 *@
-                                            <p class="bg-slate-50 text-gray-600 h-12 text-center px-4 flex items-center justify-start -mt-px text-sm">@testRun.Results.UnitTestResult[0].ComputerName</p>
-                                            <p class="bg-gray-100 text-gray-600 h-12 text-center px-4 flex items-center justify-start -mt-px text-sm">@testRun.TestSettings.Description</p>  @* border-t border-gray-300 *@
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.RunUser</p> @* border-t border-gray-300 *@
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.Results.UnitTestResult[0].ComputerName</p>
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.TestSettings.Description</p>  @* border-t border-gray-300 *@
                                         </div>
                                     </div>
                                 </div>
@@ -104,262 +220,724 @@
                         </div>
                     </div>
                     <div class="p-4 md:w-1/3">
-                        <div class="flex rounded-lg h-full bg-gray-100 p-8 flex-col">
-                            <div class="flex items-center mb-3">
+                        <div class="flex flex-col border-solid border-2 border-indigo-200 rounded-t-lg">
+                            @* h-full *@
+                            <div class="flex items-center rounded-t-lg bg-slate-100 p-4 border-b-[3px] border-indigo-200">
                                 <div class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-indigo-500 text-white flex-shrink-0">
                                     <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                                     </svg>
                                 </div>
                                 <h2 class="text-gray-900 text-lg title-font font-medium">Run Time Summary</h2>
                             </div>
                             <div class="flex-grow">
-                                <p class="leading-relaxed text-base">Blue bottle crucifix vinyl post-ironic four dollar toast vegan taxidermy. Gastropub indxgo juice poutine.</p>
-                                <a class="mt-3 text-indigo-500 inline-flex items-center">
-                                    Learn More
-                                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-2" viewBox="0 0 24 24">
-                                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                                    </svg>
-                                </a>
+                                <div class="container mx-auto flex flex-wrap">
+                                    <div class="flex lg:w-full w-full flex-wrap">
+                                        <div class="lg:w-1/4 w-full mb-10 lg:mb-0">
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Start Time</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">End Time</p>
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Duration</p>
+                                        </div>
+                                        <div class="lg:w-3/4 w-full mb-10 lg:mb-0">
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@GetShortDateTime(testRun.Times.Start.ToString()).ToString()</p>
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@GetShortDateTime(testRun.Times.Finish.ToString()).ToString()</p>
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@ToExactTimeDefinition(testRun.Times.Start.ToString(), testRun.Times.Finish.ToString())</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="p-4 md:w-1/3">
-                        <div class="flex rounded-lg h-full bg-gray-100 p-8 flex-col">
-                            <div class="flex items-center mb-3">
+                        <div class="flex h-full flex-col border-solid border-2 border-indigo-200 rounded-t-lg">
+                            <div class="flex items-center rounded-t-lg bg-slate-100 p-4 border-b-[3px] border-indigo-200">
                                 <div class="w-8 h-8 mr-3 inline-flex items-center justify-center rounded-full bg-indigo-500 text-white flex-shrink-0">
                                     <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                                        <circle cx="6" cy="6" r="3"></circle>
-                                        <circle cx="6" cy="18" r="3"></circle>
-                                        <path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"></path>
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                                     </svg>
                                 </div>
                                 <h2 class="text-gray-900 text-lg title-font font-medium">Tests Statuses</h2>
                             </div>
                             <div class="flex-grow">
-                                <p class="leading-relaxed text-base">Blue bottle crucifix vinyl post-ironic four dollar toast vegan taxidermy. Gastropub indxgo juice poutine.</p>
-                                <a class="mt-3 text-indigo-500 inline-flex items-center">
-                                    Learn More
-                                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-2" viewBox="0 0 24 24">
-                                        <path d="M5 12h14M12 5l7 7-7 7"></path>
-                                    </svg>
-                                </a>
+                                <div class="container mx-auto flex flex-wrap">
+                                    <div class="flex lg:w-full w-full flex-wrap">
+                                        <div class="lg:w-1/4 w-full mb-10 lg:mb-0">
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Total</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Executed</p>
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Passed</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Failed</p>
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Inconclusive</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Error</p>
+                                            <p class="bg-gray-200 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Warning</p>
+                                            <p class="bg-slate-100 text-gray-900 h-12 text-left px-4 flex items-center justify-start -mt-px">Timeout</p>
+                                        </div>
+                                        <div class="lg:w-3/4 w-full mb-10 lg:mb-0">
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Total</p>
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Executed</p>
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Passed</p>
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Failed</p>
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Inconclusive</p>
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Error</p>
+                                            <p class="bg-gray-100 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Warning</p>
+                                            <p class="bg-slate-50 text-gray-600 h-12 text-left px-4 flex items-center justify-start -mt-px text-sm">@testRun.ResultSummary.Counters.Timeout</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        <section class="text-gray-700 body-font border-t border-gray-200">
+            <div class="container px-5 py-4 mx-auto">
+                @* relative font-inter antialiased *@
+                <main class="flex overflow-hidden">
+                    @* relative flex flex-col justify-center bg-white overflow-hidden *@
+                    <div class="w-full mx-auto px-4 md:px-6 py-8">
+                        @* max-w-6xl *@
+                        <!-- Tabs component -->
+                        <div x-data="{ activeTab: 1 }">
+                            <div class="flex justify-center">
+                                <div role="tablist" class="max-[480px]:max-w-[180px] inline-flex flex-wrap justify-center bg-slate-200 rounded-[20px] p-1 mb-8 min-[480px]:mb-12"
+                                     @@keydown.right.prevent.stop="$focus.wrap().next()"
+                                     @@keydown.left.prevent.stop="$focus.wrap().prev()"
+                                     @@keydown.home.prevent.stop="$focus.first()"
+                                     @@keydown.end.prevent.stop="$focus.last()">
+                                    <button id="tab-1" class="flex-1 text-sm font-medium h-8 px-4 rounded-2xl whitespace-nowrap focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150 ease-in-out"
+                                            x-bind:class="activeTab === 1 ? 'bg-white text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+                                            x-bind:tabindex="activeTab === 1 ? 0 : -1"
+                                            x-bind:aria-selected="activeTab === 1"
+                                            aria-controls="tabpanel-1"
+                                            @@click="activeTab = 1"
+                                            @@focus="activeTab = 1">
+                                        All Tests
+                                    </button>
+                                    <button id="tab-2" class="flex-1 text-sm font-medium h-8 px-4 rounded-2xl whitespace-nowrap focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150 ease-in-out"
+                                            x-bind:class="activeTab === 2 ? 'bg-white text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+                                            x-bind:tabindex="activeTab === 2 ? 0 : -1"
+                                            x-bind:aria-selected="activeTab === 2"
+                                            aria-controls="tabpanel-2"
+                                            @@click="activeTab = 2"
+                                            @@focus="activeTab = 2">
+                                        All Tests Group By Classes
+                                    </button>
+                                    <button id="tab-3" class="flex-1 text-sm font-medium h-8 px-4 rounded-2xl whitespace-nowrap focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150 ease-in-out"
+                                            x-bind:class="activeTab === 3 ? 'bg-white text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+                                            x-bind:tabindex="activeTab === 3 ? 0 : -1"
+                                            x-bind:aria-selected="activeTab === 3"
+                                            aria-controls="tabpanel-3"
+                                            @@click="activeTab = 3"
+                                            @@focus="activeTab = 3">
+                                        Five most slowest tests
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Tab panels -->
+                            <div class="mx-auto">
+                                <div class="relative flex flex-col">
+                                    <!-- Panel #1 -->
+                                    <article id="tabpanel-1"
+                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                             role="tabpanel"
+                                             tabindex="0"
+                                             aria-labelledby="tab-1"
+                                             x-show="activeTab === 1"
+                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                             x-transition:enter-start="opacity-0 -translate-y-8"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                             x-transition:leave-start="opacity-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                        <div class="inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
+                                            <table class="w-full text-sm text-gray-400 leading-normal table-fixed">
+                                                <thead class="w-full bg-gray-800 text-xs uppercase font-medium">
+                                                    <tr>
+                                                        @* <th class="w-30 test-results-table-th">Duration</th> *@
+                                                        <th class="w-20 px-6 py-4 text-left tracking-wider"></th>
+                                                        <th class="w-48 px-6 py-4 text-left tracking-wider">Time</th>
+                                                        <th class="w-32 px-6 py-4 text-left tracking-wider">Status</th>
+                                                        <th class="w-72 px-6 py-4 text-left tracking-wider">Test</th>
+                                                        <th class="px-6 py-4 text-left tracking-wider">Message</th>
+                                                        <th class="w-56 px-6 py-4 text-left tracking-wider">Duration</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody x-data="btnClick" x-id="['table']">
+                                                    @foreach (var unitTestResult in @testRun.Results.UnitTestResult)
+                                                    {
+                                                        <tr :id="$id('table-tr-1')">
+                                                            <td class="pl-4 border-b border-gray-200 bg-white text-sm">
+                                                                @* :id="$id('btn-tr-1')" *@
+                                                                @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                {
+                                                                    <a id="@unitTestResult.TestId"
+                                                                       class="cursor-pointer inline-block text-gray-500 hover:text-gray-700"
+                                                                       x-bind="triggerBtn">
+                                                                        @* x-init="$watch('isSvgRotate', value => console.log(value))" *@
+                                                                        <img class="inline-block h-4 w-4 fill-current flex-no-shrink" src="./../Contents/img/arrow.png" alt="Alternate Text" />
+                                                                    </a>
+                                                                }
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <p class="text-gray-900 whitespace-no-wrap">@GetShortDateTime(@unitTestResult.StartTime.ToString()).ToString()</p>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                @if (unitTestResult.Outcome == Outcome.Failed)
+                                                                {
+                                                                    badgeColor = "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500";
+                                                                    badgeDot = "bg-red-800 dark:bg-red-500";
+                                                                }
+
+                                                                @if (unitTestResult.Outcome == Outcome.Passed)
+                                                                {
+                                                                    badgeColor = "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500";
+                                                                    badgeDot = "bg-green-800 dark:bg-green-500";
+                                                                }
+
+                                                                @if (unitTestResult.Outcome == Outcome.Warn)
+                                                                {
+                                                                    badgeColor = "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-500";
+                                                                    badgeDot = "bg-yellow-800 dark:bg-yellow-500";
+                                                                }
+
+                                                                <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium @badgeColor">
+                                                                    <span class="size-1.5 inline-block rounded-full @badgeDot"></span>
+                                                                    @unitTestResult.Outcome
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.TestName</p>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                {
+                                                                    <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.Output.ErrorInfo.Message</p>
+                                                                }
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <div class="bottom flex-grow h-30 py-1">
+                                                                    @* <div class="bg-purple-400 text-white rounded p-1 text-sm mb-1 whitespace-no-wrap">
+                                                                        <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                                            <span class="px-2">
+                                                                                Sec
+                                                                            </span>
+                                                                            <span class="time pr-2">
+                                                                                @ToExactTimeDuration(@unitTestResult.Duration.TimeOfDay.ToString()).InSeconds
+                                                                            </span>
+                                                                            <svg class="w-4 h-4 text-white-500 dark:text-white-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div> *@
+                                                                    <div class="bg-purple-400 text-white rounded p-1 text-sm mb-1 whitespace-no-wrap">
+                                                                        <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                                            <span class="px-2">
+                                                                                Ms
+                                                                            </span>
+                                                                            <span class="time pr-2">
+                                                                                @ToExactTimeDuration(@unitTestResult.Duration.TimeOfDay.ToString()).InMilliSeconds
+                                                                            </span>
+                                                                            <svg class="w-4 h-4 text-white-500 dark:text-white-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr :id="$id('table-tr-2')"
+                                                            class="hidden"
+                                                            x-cloak
+                                                            x-transition:enter.duration.500ms
+                                                            x-transition:leave.duration.400ms
+                                                            x-transition:enter.scale.80
+                                                            x-transition:leave.scale.90>
+                                                            <td colspan="6">
+                                                                <div class="bg-white">
+                                                                    <ul class="stacktrace-detail-content">
+                                                                        <li>
+                                                                            <div class="stacktrace-detail"></div>
+                                                                            <div class="stacktrace-detail-main">
+                                                                                <fieldset class="stacktrace-detail-main-fieldset">
+                                                                                    <legend class="stacktrace-detail-main-legend">
+                                                                                        <span class="label label-primary">Stacktrace</span>
+                                                                                    </legend>
+                                                                                    <div class="ml-1.5 mr-3">
+                                                                                        @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                                        {
+                                                                                            <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.Output.ErrorInfo.StackTrace</p>
+                                                                                        }
+                                                                                    </div>
+                                                                                </fieldset>
+                                                                            </div>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </article>
+                                    <!-- Panel #2 -->
+                                    <article id="tabpanel-2"
+                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                             role="tabpanel"
+                                             tabindex="0"
+                                             aria-labelledby="tab-2"
+                                             x-show="activeTab === 2"
+                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                             x-transition:enter-start="opacity-0 -translate-y-8"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                             x-transition:leave-start="opacity-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                        <div class="flex inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
+                                            <aside class="flex flex-col w-64 px-5 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
+                                                <div class="flex flex-col justify-between flex-1">
+                                                    <nav class="-mx-3 space-y-6 ">
+                                                        @foreach (var groupedByClass in @groupedByClasses)
+                                                        {
+                                                            var className = @groupedByClass.Select(c => c.TestMethod.ClassName.Split(',')[0]).FirstOrDefault();
+                                                            var testClass = @className?.Split('.').Last();
+
+                                                            <div class="space-y-3 ">
+                                                                <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
+                                                                    <svg class="w-5 h-5 fill-gray-500" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
+                                                                        <path style="fill:none" d="M0 .008h48v48H0z" />
+                                                                        <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
+                                                                    </svg>
+
+                                                                    <label class="px-3 text-xs text-gray-500 uppercase dark:text-gray-400">@testClass</label>
+                                                                </a>
+                                                                
+                                                                @* @foreach (var item in groupedByClass)
+                                                                {
+                                                                    <a id="@item.Id" class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
+                                                                        <svg class="w-5 h-5 fill-gray-500" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
+                                                                            <path style="fill:none" d="M0 .008h48v48H0z" />
+                                                                            <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
+                                                                        </svg>
+
+                                                                        <span class="mx-2 text-sm font-medium">@item.Name</span>
+                                                                    </a>
+                                                                } *@
+                                                            </div>
+                                                        }
+                                                    </nav>
+                                                </div>
+                                            </aside>
+                                            <main class="flex-1 px-5 py-8 bg-[#F1F2F4] sm:p-10 space-y-6">
+                                                @* @foreach (var groupedByClass in @groupedByClasses)
+                                                {
+                                                    @foreach (var item in groupedByClass)
+                                                    {
+
+                                                    }
+                                                } *@
+                                                <section class="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
+                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <span class="block text-2xl font-bold">62</span>
+                                                            <span class="block text-gray-500">Students</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-green-600 bg-green-100 rounded-full mr-6">
+                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <span class="block text-2xl font-bold">6.8</span>
+                                                            <span class="block text-gray-500">Average mark</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-red-600 bg-red-100 rounded-full mr-6">
+                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <span class="inline-block text-2xl font-bold">9</span>
+                                                            <span class="inline-block text-xl text-gray-500 font-semibold">(14%)</span>
+                                                            <span class="block text-gray-500">Underperforming students</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
+                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <span class="block text-2xl font-bold">83%</span>
+                                                            <span class="block text-gray-500">Finished homeworks</span>
+                                                        </div>
+                                                    </div>
+                                                </section>
+                                                <section class='bg-white p-6 shadow rounded'>
+                                                    <div class='bg-gray-200 pt-5 px-20 rounded inline-block '></div>
+                                                    <div class='border mb-5 mt-4'></div>
+                                                    <div class='bg-gray-200 pt-3 rounded max-w-lg mb-3 '></div>
+                                                    <div class='bg-gray-100 pt-3 rounded max-w-sm '></div>
+                                                </section>
+                                            </main>
+                                        </div>
+                                    </article>
+                                    <!-- Panel #3 -->
+                                    <article id="tabpanel-3"
+                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                             role="tabpanel"
+                                             tabindex="0"
+                                             aria-labelledby="tab-3"
+                                             x-show="activeTab === 3"
+                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                             x-transition:enter-start="opacity-0 -translate-y-8"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                             x-transition:leave-start="opacity-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                        <div class="inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
+                                            <table class="w-full text-sm text-gray-400 leading-normal table-fixed">
+                                                <thead class="w-full bg-gray-800 text-xs uppercase font-medium">
+                                                    <tr>
+                                                        <th class="w-20 px-6 py-4 text-left tracking-wider"></th>
+                                                        <th class="w-48 px-6 py-4 text-left tracking-wider">Time</th>
+                                                        <th class="w-32 px-6 py-4 text-left tracking-wider">Status</th>
+                                                        <th class="w-72 px-6 py-4 text-left tracking-wider">Test</th>
+                                                        <th class="px-6 py-4 text-left tracking-wider">Message</th>
+                                                        <th class="w-56 px-6 py-4 text-left tracking-wider">Duration</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody x-data="btnClick" x-id="['table']">
+                                                    @foreach (var unitTestResult in @testRun.Results.UnitTestResult)
+                                                    {
+                                                        <tr :id="$id('table-tr-1')">
+                                                            <td class="pl-4 border-b border-gray-200 bg-white text-sm">
+                                                                @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                {
+                                                                    <a id="@unitTestResult.TestId"
+                                                                       class="cursor-pointer inline-block text-gray-500 hover:text-gray-700"
+                                                                       x-bind="triggerBtn">
+                                                                        <img class="inline-block h-4 w-4 fill-current flex-no-shrink" src="./../Contents/img/arrow.png" alt="Alternate Text" />
+                                                                    </a>
+                                                                }
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <p class="text-gray-900 whitespace-no-wrap">@GetShortDateTime(@unitTestResult.StartTime.ToString()).ToString()</p>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                @if (unitTestResult.Outcome == Outcome.Failed)
+                                                                {
+                                                                    badgeColor = "bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500";
+                                                                    badgeDot = "bg-red-800 dark:bg-red-500";
+                                                                }
+
+                                                                @if (unitTestResult.Outcome == Outcome.Passed)
+                                                                {
+                                                                    badgeColor = "bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500";
+                                                                    badgeDot = "bg-green-800 dark:bg-green-500";
+                                                                }
+
+                                                                @if (unitTestResult.Outcome == Outcome.Warn)
+                                                                {
+                                                                    badgeColor = "bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-500";
+                                                                    badgeDot = "bg-yellow-800 dark:bg-yellow-500";
+                                                                }
+
+                                                                <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium @badgeColor">
+                                                                    <span class="size-1.5 inline-block rounded-full @badgeDot"></span>
+                                                                    @unitTestResult.Outcome
+                                                                </span>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.TestName</p>
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                {
+                                                                    <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.Output.ErrorInfo.Message</p>
+                                                                }
+                                                            </td>
+                                                            <td class="px-5 border-b border-gray-200 bg-white text-sm">
+                                                                <div class="bottom flex-grow h-30 py-1">
+                                                                    <div class="bg-purple-400 text-white rounded p-1 text-sm mb-1 whitespace-no-wrap">
+                                                                        <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                                            <span class="px-2">
+                                                                                Ms
+                                                                            </span>
+                                                                            <span class="time pr-2">
+                                                                                @ToExactTimeDuration(@unitTestResult.Duration.TimeOfDay.ToString()).InMilliSeconds
+                                                                            </span>
+                                                                            <svg class="w-4 h-4 text-white-500 dark:text-white-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                                                                            </svg>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr :id="$id('table-tr-2')"
+                                                            class="hidden"
+                                                            x-cloak
+                                                            x-transition:enter.duration.500ms
+                                                            x-transition:leave.duration.400ms
+                                                            x-transition:enter.scale.80
+                                                            x-transition:leave.scale.90>
+                                                            <td colspan="6">
+                                                                <div class="bg-white">
+                                                                    <ul class="stacktrace-detail-content">
+                                                                        <li>
+                                                                            <div class="stacktrace-detail"></div>
+                                                                            <div class="stacktrace-detail-main">
+                                                                                <fieldset class="stacktrace-detail-main-fieldset">
+                                                                                    <legend class="stacktrace-detail-main-legend">
+                                                                                        <span class="label label-primary">Stacktrace</span>
+                                                                                    </legend>
+                                                                                    <div class="ml-1.5 mr-3">
+                                                                                        @if (unitTestResult.Output != null && unitTestResult.Output.ErrorInfo != null)
+                                                                                        {
+                                                                                            <p class="text-gray-900 whitespace-no-wrap">@unitTestResult.Output.ErrorInfo.StackTrace</p>
+                                                                                        }
+                                                                                    </div>
+                                                                                </fieldset>
+                                                                            </div>
+                                                                        </li>
+                                                                    </ul>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End: Tabs component -->
+                    </div>
+                </main>
+            </div>
+        </section>
     }
 
-    
-    <section class="text-gray-700 body-font overflow-hidden border-t border-gray-200">
-        <div class="container px-5 py-24 mx-auto flex flex-wrap">
-            <div class="lg:w-1/4 mt-48 hidden lg:block">
-                <div class="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
-                    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">Fingerstache disrupt</p>
-                    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Franzen hashtag</p>
-                    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Tilde art party</p>
-                    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Banh mi cornhole</p>
-                    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Waistcoat squid hexagon</p>
-                    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Pinterest occupy authentic</p>
-                    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Brooklyn helvetica</p>
-                    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Long Feature Two</p>
-                    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Feature One</p>
-                </div>
-            </div>
-            <div class="flex lg:w-3/4 w-full flex-wrap lg:border border-gray-300 rounded-lg">
-                <div class="lg:w-1/3 lg:mt-px w-full mb-10 lg:mb-0 border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-                    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-                        <h3 class="tracking-widest">START</h3>
-                        <h2 class="text-5xl text-gray-900 font-medium leading-none mb-4 mt-2">Free</h2>
-                        <span class="text-sm text-gray-600">Next 3 months</span>
-                    </div>
-                    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="h-12 text-gray-600 px-6 text-center leading-relaxed flex items-center justify-center">Feature</p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <div class="border-t border-gray-300 p-6 text-center rounded-bl-lg">
-                        <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                            Button
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
-                                <path d="M5 12h14M12 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                        <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
-                    </div>
-                </div>
-                <div class="lg:w-1/3 lg:-mt-px w-full mb-10 lg:mb-0 border-2 rounded-lg border-indigo-500 relative">
-                    <span class="bg-indigo-500 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl">POPULAR</span>
-                    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-                        <h3 class="tracking-widest">PRO</h3>
-                        <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                            $38
-                            <span class="text-gray-600 text-base ml-1">/mo</span>
-                        </h2>
-                        <span class="text-sm text-gray-600">Charging $456 per year</span>
-                    </div>
-                    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">Feature</p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <div class="p-6 text-center border-t border-gray-300">
-                        <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                            Button
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
-                                <path d="M5 12h14M12 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                        <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
-                    </div>
-                </div>
-                <div class="lg:w-1/3 w-full lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
-                    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
-                        <h3 class="tracking-widest">BUSINESS</h3>
-                        <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
-                            $54
-                            <span class="text-gray-600 text-base ml-1">/mo</span>
-                        </h2>
-                        <span class="text-sm text-gray-600">Charging $648 per year</span>
-                    </div>
-                    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">Feature</p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
-                                <path d="M20 6L9 17l-5-5"></path>
-                            </svg>
-                        </span>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
-                        <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
-                            <path d="M18 6L6 18M6 6l12 12"></path>
-                        </svg>
-                    </p>
-                    <div class="p-6 text-center border-t border-gray-300">
-                        <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
-                            Button
-                            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
-                                <path d="M5 12h14M12 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                        <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
+
+    @* <section class="text-gray-700 body-font overflow-hidden border-t border-gray-200">
+    <div class="container px-5 py-24 mx-auto flex flex-wrap">
+    <div class="lg:w-1/4 mt-48 hidden lg:block">
+    <div class="mt-px border-t border-gray-300 border-b border-l rounded-tl-lg rounded-bl-lg overflow-hidden">
+    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start -mt-px">Fingerstache disrupt</p>
+    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Franzen hashtag</p>
+    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Tilde art party</p>
+    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Banh mi cornhole</p>
+    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Waistcoat squid hexagon</p>
+    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Pinterest occupy authentic</p>
+    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Brooklyn helvetica</p>
+    <p class="text-gray-900 h-12 text-center px-4 flex items-center justify-start">Long Feature Two</p>
+    <p class="bg-gray-100 text-gray-900 h-12 text-center px-4 flex items-center justify-start">Feature One</p>
+    </div>
+    </div>
+    <div class="flex lg:w-3/4 w-full flex-wrap lg:border border-gray-300 rounded-lg">
+    <div class="lg:w-1/3 lg:mt-px w-full mb-10 lg:mb-0 border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
+    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
+    <h3 class="tracking-widest">START</h3>
+    <h2 class="text-5xl text-gray-900 font-medium leading-none mb-4 mt-2">Free</h2>
+    <span class="text-sm text-gray-600">Next 3 months</span>
+    </div>
+    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="h-12 text-gray-600 px-6 text-center leading-relaxed flex items-center justify-center">Feature</p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <div class="border-t border-gray-300 p-6 text-center rounded-bl-lg">
+    <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
+    Button
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+    <path d="M5 12h14M12 5l7 7-7 7"></path>
+    </svg>
+    </button>
+    <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
+    </div>
+    </div>
+    <div class="lg:w-1/3 lg:-mt-px w-full mb-10 lg:mb-0 border-2 rounded-lg border-indigo-500 relative">
+    <span class="bg-indigo-500 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl">POPULAR</span>
+    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
+    <h3 class="tracking-widest">PRO</h3>
+    <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
+    $38
+    <span class="text-gray-600 text-base ml-1">/mo</span>
+    </h2>
+    <span class="text-sm text-gray-600">Charging $456 per year</span>
+    </div>
+    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">Feature</p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <div class="p-6 text-center border-t border-gray-300">
+    <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
+    Button
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+    <path d="M5 12h14M12 5l7 7-7 7"></path>
+    </svg>
+    </button>
+    <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
+    </div>
+    </div>
+    <div class="lg:w-1/3 w-full lg:mt-px border-2 border-gray-300 lg:border-none rounded-lg lg:rounded-none">
+    <div class="px-2 text-center h-48 flex flex-col items-center justify-center">
+    <h3 class="tracking-widest">BUSINESS</h3>
+    <h2 class="text-5xl text-gray-900 font-medium flex items-center justify-center leading-none mb-4 mt-2">
+    $54
+    <span class="text-gray-600 text-base ml-1">/mo</span>
+    </h2>
+    <span class="text-sm text-gray-600">Charging $648 per year</span>
+    </div>
+    <p class="bg-gray-100 text-gray-600 h-12 text-center px-2 flex items-center -mt-px justify-center border-t border-gray-300">Schlitz single-origin</p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="h-12 text-gray-600 text-center leading-relaxed flex items-center justify-center">Feature</p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <span class="w-5 h-5 inline-flex items-center justify-center bg-gray-500 text-white rounded-full flex-shrink-0">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" class="w-3 h-3" viewBox="0 0 24 24">
+    <path d="M20 6L9 17l-5-5"></path>
+    </svg>
+    </span>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <p class="bg-gray-100 text-gray-600 text-center h-12 flex items-center justify-center">
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" class="w-5 h-5 text-gray-500" viewBox="0 0 24 24">
+    <path d="M18 6L6 18M6 6l12 12"></path>
+    </svg>
+    </p>
+    <div class="p-6 text-center border-t border-gray-300">
+    <button class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">
+    Button
+    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+    <path d="M5 12h14M12 5l7 7-7 7"></path>
+    </svg>
+    </button>
+    <p class="text-xs text-gray-500 mt-3">Literally you probably haven't heard of them jean shorts.</p>
+    </div>
+    </div>
+    </div>
+    </div>
     </section>
-    @* <section class="text-gray-700 body-font border-t border-gray-200">
+    <section class="text-gray-700 body-font border-t border-gray-200">
     <div class="container px-5 py-24 mx-auto">
     <div class="flex flex-col text-center w-full mb-20">
     <h2 class="text-xs text-indigo-500 tracking-widest font-medium title-font mb-1">ROOF PARTY POLAROID</h2>

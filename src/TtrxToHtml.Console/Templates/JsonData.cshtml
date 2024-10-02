@@ -166,14 +166,46 @@
 <body class="bg-white font-roboto text-base tracking-wide text-[#39464e] antialiased">
     @foreach (var testRun in Model.TestResults.TestRun)
     {
-        var totalClasses = testRun.TestDefinitions.UnitTest
-            .Select(f => f.TestMethod.ClassName.Split(',')[0]).Distinct();
+        @* var totalClasses = testRun.TestDefinitions.UnitTest
+        .Select(f => f.TestMethod.ClassName.Split(',')[0]).Distinct(); *@
 
-        var groupedByClasses = testRun.TestDefinitions.UnitTest
+        @* var groupedByClasses = testRun.TestDefinitions.UnitTest
+            .GroupBy(u => u.TestMethod.ClassName)
+            .Select(grp => grp.ToList())
+            .AsEnumerable(); *@
+
+        var unitTestResults = testRun.Results.UnitTestResult;
+        var unitTests = testRun.TestDefinitions.UnitTest;
+
+        var result = unitTestResults
+            .Join(unitTests, utr => utr.TestId, ut => ut.Id,
+                (utr, ut) => new
+                {
+                    ut.Name,
+                    ut.Storage,
+                    ut.Id,
+                    ut.Execution,
+                    ut.TestMethod,
+                    utr.ExecutionId,
+                    utr.TestId,
+                    utr.TestName,
+                    utr.ComputerName,
+                    utr.Duration,
+                    utr.StartTime,
+                    utr.EndTime,
+                    utr.TestType,
+                    utr.Outcome,
+                    utr.TestListId,
+                    utr.RelativeResultsDirectory,
+                    utr.Output
+                }
+            );
+
+        var groupedByClasses = result
             .GroupBy(u => u.TestMethod.ClassName)
             .Select(grp => grp.ToList())
             .AsEnumerable();
- 
+
         <header class="text-gray-700 body-font border-b border-gray-200">
             <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
                 <div class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
@@ -297,7 +329,7 @@
                     <div class="w-full mx-auto px-4 md:px-6 py-8">
                         @* max-w-6xl *@
                         <!-- Tabs component -->
-                        <div x-data="{ activeTab: 1 }">
+                        <div x-data="{ activeTab: 1, testClassActiveTab: 0 }">
                             <div class="flex justify-center">
                                 <div role="tablist" class="max-[480px]:max-w-[180px] inline-flex flex-wrap justify-center bg-slate-200 rounded-[20px] p-1 mb-8 min-[480px]:mb-12"
                                      @@keydown.right.prevent.stop="$focus.wrap().next()"
@@ -337,18 +369,18 @@
                             <div class="mx-auto">
                                 <div class="relative flex flex-col">
                                     <!-- Panel #1 -->
-                                    <article id="tabpanel-1"
-                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
-                                             role="tabpanel"
-                                             tabindex="0"
-                                             aria-labelledby="tab-1"
-                                             x-show="activeTab === 1"
-                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                                             x-transition:enter-start="opacity-0 -translate-y-8"
-                                             x-transition:enter-end="opacity-100 translate-y-0"
-                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                                             x-transition:leave-start="opacity-100 translate-y-0"
-                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                    <div id="tabpanel-1"
+                                         class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                         role="tabpanel"
+                                         tabindex="0"
+                                         aria-labelledby="tab-1"
+                                         x-show="activeTab === 1"
+                                         x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                         x-transition:enter-start="opacity-0 -translate-y-8"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                         x-transition:leave-start="opacity-100 translate-y-0"
+                                         x-transition:leave-end="opacity-0 translate-y-12">
                                         <div class="inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
                                             <table class="w-full text-sm text-gray-400 leading-normal table-fixed">
                                                 <thead class="w-full bg-gray-800 text-xs uppercase font-medium">
@@ -417,18 +449,18 @@
                                                             <td class="px-5 border-b border-gray-200 bg-white text-sm">
                                                                 <div class="bottom flex-grow h-30 py-1">
                                                                     @* <div class="bg-purple-400 text-white rounded p-1 text-sm mb-1 whitespace-no-wrap">
-                                                                        <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
-                                                                            <span class="px-2">
-                                                                                Sec
-                                                                            </span>
-                                                                            <span class="time pr-2">
-                                                                                @ToExactTimeDuration(@unitTestResult.Duration.TimeOfDay.ToString()).InSeconds
-                                                                            </span>
-                                                                            <svg class="w-4 h-4 text-white-500 dark:text-white-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                                                                <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
-                                                                            </svg>
-                                                                        </div>
-                                                                    </div> *@
+                                                            <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
+                                                            <span class="px-2">
+                                                            Sec
+                                                            </span>
+                                                            <span class="time pr-2">
+                                                            @ToExactTimeDuration(@unitTestResult.Duration.TimeOfDay.ToString()).InSeconds
+                                                            </span>
+                                                            <svg class="w-4 h-4 text-white-500 dark:text-white-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                                                            </svg>
+                                                            </div>
+                                                            </div> *@
                                                                     <div class="bg-purple-400 text-white rounded p-1 text-sm mb-1 whitespace-no-wrap">
                                                                         <div class="inset-y-0 end-0 top-0 flex items-center pe-3.5 pointer-events-none">
                                                                             <span class="px-2">
@@ -479,132 +511,143 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                    </article>
+                                    </div>
                                     <!-- Panel #2 -->
-                                    <article id="tabpanel-2"
-                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
-                                             role="tabpanel"
-                                             tabindex="0"
-                                             aria-labelledby="tab-2"
-                                             x-show="activeTab === 2"
-                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                                             x-transition:enter-start="opacity-0 -translate-y-8"
-                                             x-transition:enter-end="opacity-100 translate-y-0"
-                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                                             x-transition:leave-start="opacity-100 translate-y-0"
-                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                    <div id="tabpanel-2"
+                                         class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                         role="tabpanel"
+                                         tabindex="0"
+                                         aria-labelledby="tab-2"
+                                         x-show="activeTab === 2"
+                                         x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                         x-transition:enter-start="opacity-0 -translate-y-8"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                         x-transition:leave-start="opacity-100 translate-y-0"
+                                         x-transition:leave-end="opacity-0 translate-y-12">
                                         <div class="flex inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
                                             <aside class="flex flex-col w-64 px-5 py-8 overflow-y-auto bg-white border-r rtl:border-r-0 rtl:border-l dark:bg-gray-900 dark:border-gray-700">
                                                 <div class="flex flex-col justify-between flex-1">
-                                                    <nav class="-mx-3 space-y-6 ">
-                                                        @foreach (var groupedByClass in @groupedByClasses)
+                                                    <nav class="-mx-3 space-y-6">
+                                                        @foreach (var groupedByClass in @groupedByClasses.Select((Value, index) => (Value, index)))
                                                         {
-                                                            var className = @groupedByClass.Select(c => c.TestMethod.ClassName.Split(',')[0]).FirstOrDefault();
+                                                            var className = @groupedByClass.Value.Select(c => c.TestMethod.ClassName.Split(',')[0]).FirstOrDefault();
                                                             var testClass = @className?.Split('.').Last();
 
-                                                            <div class="space-y-3 ">
-                                                                <a class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
+                                                            <div class="space-y-3 cursor-pointer">
+                                                                <a id="#@testClass"
+                                                                   class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700"
+                                                                   x-bind:class="testClassActiveTab === @groupedByClass.index ? 'bg-white text-slate-900' : 'text-slate-600 hover:text-slate-900'"
+                                                                   x-bind:tabindex="testClassActiveTab === @groupedByClass.index ? 0 : -1"
+                                                                   x-bind:aria-selected="testClassActiveTab === @groupedByClass.index"
+                                                                   aria-controls="tabpanel-@groupedByClass.index"
+                                                                   @@click="testClassActiveTab = @groupedByClass.index"
+                                                                   @@focus="testClassActiveTab = @groupedByClass.index">
                                                                     <svg class="w-5 h-5 fill-gray-500" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
-                                                                        <path style="fill:none" d="M0 .008h48v48H0z" />
-                                                                        <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
-                                                                    </svg>
-
-                                                                    <label class="px-3 text-xs text-gray-500 uppercase dark:text-gray-400">@testClass</label>
+                                                                    <path style="fill:none" d="M0 .008h48v48H0z" />
+                                                                    <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
+                                                                            </svg>
+                                                                    <label class="px-3 text-xs text-gray-500 uppercase cursor-pointer dark:text-gray-400">@testClass</label>
                                                                 </a>
-                                                                
+
                                                                 @* @foreach (var item in groupedByClass)
                                                                 {
-                                                                    <a id="@item.Id" class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
-                                                                        <svg class="w-5 h-5 fill-gray-500" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
-                                                                            <path style="fill:none" d="M0 .008h48v48H0z" />
-                                                                            <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
-                                                                        </svg>
+                                                                <a id="@item.Id" class="flex items-center px-3 py-2 text-gray-600 transition-colors duration-300 transform rounded-lg dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700" href="#">
+                                                                <svg class="w-5 h-5 fill-gray-500" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" xml:space="preserve">
+                                                                <path style="fill:none" d="M0 .008h48v48H0z" />
+                                                                <path d="M39.114 34.332C37.38 31.449 32.326 23.487 31 21.402V10h1a2 2 0 0 0 0-4H16a2 2 0 0 0 0 4h1v11.402c-1.326 2.085-6.38 10.047-8.114 12.93-.512.852-.772 1.749-.772 2.668 0 2.757 2.243 5 4.999 5h21.773c2.757 0 5-2.243 5-5 0-.919-.26-1.816-.772-2.668M20.688 23.059c.204-.322.312-.694.312-1.075V10.003h6v11.981a2 2 0 0 0 .312 1.074c.031.049 1.55 2.435 3.325 5.244l-15.434 3.43c2.495-3.976 5.441-8.605 5.485-8.673" />
+                                                                </svg>
 
-                                                                        <span class="mx-2 text-sm font-medium">@item.Name</span>
-                                                                    </a>
+                                                                <span class="mx-2 text-sm font-medium">@item.Name</span>
+                                                                </a>
                                                                 } *@
                                                             </div>
                                                         }
                                                     </nav>
                                                 </div>
                                             </aside>
-                                            <main class="flex-1 px-5 py-8 bg-[#F1F2F4] sm:p-10 space-y-6">
-                                                @* @foreach (var groupedByClass in @groupedByClasses)
+                                            <main class="flex-1 px-5 py-8 bg-[#F1F2F4] sm:p-10">  @* space-y-6 *@
+                                                @foreach (var groupedByClass in @groupedByClasses.Select((Value, Index) => (Value, Index)))
                                                 {
-                                                    @foreach (var item in groupedByClass)
-                                                    {
+                                                    var className = @groupedByClass.Value.Select(c => c.TestMethod.ClassName.Split(',')[0]).FirstOrDefault();
+                                                    var testClass = @className?.Split('.').Last();
 
-                                                    }
-                                                } *@
-                                                <section class="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
-                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
-                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                            </svg>
+                                                    <div id="@testClass"
+                                                            role="tabpanel"
+                                                            class="grid md:grid-cols-2 xl:grid-cols-4 gap-6"
+                                                            aria-labelledby="testClassActiveTab-@groupedByClass.Index"
+                                                            x-show="testClassActiveTab === @groupedByClass.Index">
+
+                                                        <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                            <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
+                                                                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <span class="block text-2xl font-bold">@groupedByClass.Value.Count()</span>
+                                                                <span class="block text-gray-500">Total Test Cases</span>
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <span class="block text-2xl font-bold">62</span>
-                                                            <span class="block text-gray-500">Students</span>
+                                                        <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                            <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-green-600 bg-green-100 rounded-full mr-6">
+                                                                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <span class="block text-2xl font-bold">6.8</span>
+                                                                <span class="block text-gray-500">Average mark</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                            <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-red-600 bg-red-100 rounded-full mr-6">
+                                                                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <span class="inline-block text-2xl font-bold">9</span>
+                                                                <span class="inline-block text-xl text-gray-500 font-semibold">(14%)</span>
+                                                                <span class="block text-gray-500">Underperforming students</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex items-center p-8 bg-white shadow rounded-lg">
+                                                            <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
+                                                                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                                </svg>
+                                                            </div>
+                                                            <div>
+                                                                <span class="block text-2xl font-bold">83%</span>
+                                                                <span class="block text-gray-500">Finished homeworks</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
-                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-green-600 bg-green-100 rounded-full mr-6">
-                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <span class="block text-2xl font-bold">6.8</span>
-                                                            <span class="block text-gray-500">Average mark</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
-                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-red-600 bg-red-100 rounded-full mr-6">
-                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <span class="inline-block text-2xl font-bold">9</span>
-                                                            <span class="inline-block text-xl text-gray-500 font-semibold">(14%)</span>
-                                                            <span class="block text-gray-500">Underperforming students</span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="flex items-center p-8 bg-white shadow rounded-lg">
-                                                        <div class="inline-flex flex-shrink-0 items-center justify-center h-16 w-16 text-blue-600 bg-blue-100 rounded-full mr-6">
-                                                            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                                            </svg>
-                                                        </div>
-                                                        <div>
-                                                            <span class="block text-2xl font-bold">83%</span>
-                                                            <span class="block text-gray-500">Finished homeworks</span>
-                                                        </div>
-                                                    </div>
-                                                </section>
-                                                <section class='bg-white p-6 shadow rounded'>
+                                                }
+                                                
+                                                @* <section class='bg-white p-6 shadow rounded'>
                                                     <div class='bg-gray-200 pt-5 px-20 rounded inline-block '></div>
                                                     <div class='border mb-5 mt-4'></div>
                                                     <div class='bg-gray-200 pt-3 rounded max-w-lg mb-3 '></div>
                                                     <div class='bg-gray-100 pt-3 rounded max-w-sm '></div>
-                                                </section>
+                                                </section> *@
                                             </main>
                                         </div>
-                                    </article>
+                                    </div>
                                     <!-- Panel #3 -->
-                                    <article id="tabpanel-3"
-                                             class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
-                                             role="tabpanel"
-                                             tabindex="0"
-                                             aria-labelledby="tab-3"
-                                             x-show="activeTab === 3"
-                                             x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                                             x-transition:enter-start="opacity-0 -translate-y-8"
-                                             x-transition:enter-end="opacity-100 translate-y-0"
-                                             x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                                             x-transition:leave-start="opacity-100 translate-y-0"
-                                             x-transition:leave-end="opacity-0 translate-y-12">
+                                    <div id="tabpanel-3"
+                                         class="w-full bg-white rounded-2xl shadow-xl min-[480px]:flex items-stretch focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300"
+                                         role="tabpanel"
+                                         tabindex="0"
+                                         aria-labelledby="tab-3"
+                                         x-show="activeTab === 3"
+                                         x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
+                                         x-transition:enter-start="opacity-0 -translate-y-8"
+                                         x-transition:enter-end="opacity-100 translate-y-0"
+                                         x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
+                                         x-transition:leave-start="opacity-100 translate-y-0"
+                                         x-transition:leave-end="opacity-0 translate-y-12">
                                         <div class="inline-block min-w-full shadow rounded-lg overflow-hidden bg-gray-900 p-1">
                                             <table class="w-full text-sm text-gray-400 leading-normal table-fixed">
                                                 <thead class="w-full bg-gray-800 text-xs uppercase font-medium">
@@ -719,7 +762,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                    </article>
+                                    </div>
                                 </div>
                             </div>
                         </div>

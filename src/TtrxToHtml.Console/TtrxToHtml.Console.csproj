@@ -18,12 +18,17 @@
 		<None Remove="Contents\alpinejs\alpinejs.cdn.min.js" />
 		<None Remove="Contents\font-awesome-4.7.0\font-awesome.min.css" />
 		<None Remove="Contents\font-awesome.min.css" />
+		<None Remove="Contents\fonts\Inter\Inter_18pt-Regular.ttf" />
+		<None Remove="Contents\fonts\Inter\OFL.txt" />
+		<None Remove="Contents\fonts\Inter\README.txt" />
 		<None Remove="Contents\fonts\Roboto-Black.ttf" />
 		<None Remove="Contents\fonts\Roboto-Bold.ttf" />
 		<None Remove="Contents\fonts\Roboto-Light.ttf" />
 		<None Remove="Contents\fonts\Roboto-Medium.ttf" />
 		<None Remove="Contents\fonts\Roboto-Regular.ttf" />
 		<None Remove="Contents\fonts\Roboto-Thin.ttf" />
+		<None Remove="Contents\fonts\Roboto\LICENSE.txt" />
+		<None Remove="Contents\fonts\Roboto\Roboto-Regular.ttf" />
 		<None Remove="Contents\img\arrow.png" />
 		<None Remove="Contents\jquery-3.1.1.min.js" />
 		<None Remove="Contents\style.css" />
@@ -31,8 +36,9 @@
 		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
 		<None Remove="exapmle1.trx" />
 		<None Remove="exapmle2.trx.old" />
-		<None Remove="Templates\JsonData - Copy.cshtml" />
 		<None Remove="Templates\JsonData.cshtml" />
+		<None Remove="Templates\JsonData1.cshtml" />
+		<None Remove="Templates\JsonData2.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -42,22 +48,19 @@
 		<Content Include="Contents\font-awesome-4.7.0\font-awesome.min.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\fonts\Roboto-Black.ttf">
+		<Content Include="Contents\fonts\Inter\Inter_18pt-Regular.ttf">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\fonts\Roboto-Bold.ttf">
+		<Content Include="Contents\fonts\Inter\OFL.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\fonts\Roboto-Light.ttf">
+		<Content Include="Contents\fonts\Inter\README.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\fonts\Roboto-Medium.ttf">
+		<Content Include="Contents\fonts\Roboto\LICENSE.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\fonts\Roboto-Regular.ttf">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Contents\fonts\Roboto-Thin.ttf">
+		<Content Include="Contents\fonts\Roboto\Roboto-Regular.ttf">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Contents\img\arrow.png">
@@ -81,12 +84,17 @@
 		<Content Include="exapmle2.trx.old">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<EmbeddedResource Include="Templates\JsonData - Copy.cshtml">
+		<EmbeddedResource Include="Templates\JsonData1.cshtml">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</EmbeddedResource>
 		<EmbeddedResource Include="Templates\JsonData.cshtml">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Templates\JsonData2.cshtml">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

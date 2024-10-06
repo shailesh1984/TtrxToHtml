@@ -21,8 +21,6 @@ public static class TrxHelper
         }
         doc.Add(rootElement);
 
-        //doc.Save(@"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console\CombineAllTrxFilesToOneTrx.trx");
-
         XmlDocument singleTrxXdoc = new();
         singleTrxXdoc.Load(doc.CreateReader());
 

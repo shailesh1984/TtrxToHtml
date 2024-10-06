@@ -31,8 +31,3 @@
         Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
     }
 }
-
-// To convert JSON text contained in string json into an XML node
-//XmlDocument doc = JsonConvert.DeserializeXmlNode(json);
-
-

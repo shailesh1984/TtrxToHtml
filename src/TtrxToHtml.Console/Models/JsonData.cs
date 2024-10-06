@@ -1,4 +1,7 @@
-﻿namespace TtrxToHtml.Console.Models;
+﻿using Newtonsoft.Json.Serialization;
+using System.ComponentModel;
+
+namespace TtrxToHtml.Console.Models;
 
 public partial class JsonData
 {
@@ -325,10 +328,20 @@ public partial class Times
     public DateTimeOffset Finish { get; set; }
 }
 
-public enum Outcome { Failed, Passed, Warn };
+public enum Outcome { Failed, Passed, Warn, NotExecuted, Executed, Error, Timeout, Aborted, Inconclusive, PassedButRunAborted, NotRunnable, Disconnected, Completed, InProgress, Pending };
 
 public class SingleOrArrayConverter<T> : JsonConverter
 {
+    private readonly IContractResolver resolver;
+
+    public SingleOrArrayConverter() : this(JsonSerializer.CreateDefault().ContractResolver) { }
+
+    public SingleOrArrayConverter(IContractResolver resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        this.resolver = resolver;
+    }
+
     public override bool CanConvert(Type objecType)
     {
         return (objecType == typeof(List<T>));
@@ -353,5 +366,28 @@ public class SingleOrArrayConverter<T> : JsonConverter
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
         throw new NotImplementedException();
+    }
+}
+
+public static partial class JsonExtensions
+{
+    public static JsonReader MoveToContentAndAssert(this JsonReader reader)
+    {
+        if (reader == null)
+            throw new ArgumentNullException();
+        if (reader.TokenType == JsonToken.None)       // Skip past beginning of stream.
+            reader.ReadAndAssert();
+        while (reader.TokenType == JsonToken.Comment) // Skip past comments.
+            reader.ReadAndAssert();
+        return reader;
+    }
+
+    public static JsonReader ReadAndAssert(this JsonReader reader)
+    {
+        if (reader == null)
+            throw new ArgumentNullException();
+        if (!reader.Read())
+            throw new JsonReaderException("Unexpected end of JSON stream.");
+        return reader;
     }
 }

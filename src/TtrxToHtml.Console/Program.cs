@@ -14,7 +14,7 @@
             .UseMemoryCachingProvider()
             .Build();
 
-        string html = await engine.CompileRenderAsync("JsonData", testResult);
+        string html = await engine.CompileRenderAsync("Index", testResult);
 
         var path = AppDomain.CurrentDomain.BaseDirectory;
         var dateTime = DateTime.Now.ToString("yyyy-dd-M-HH-mm-ss");

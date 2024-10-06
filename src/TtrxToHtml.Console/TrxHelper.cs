@@ -5,7 +5,7 @@ public static class TrxHelper
     public static string CombineAllTrxFilesToOneTrx(string sourceDirectory)
     {
         var trxFiles = Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories)
-               .Where(s => s.EndsWith(".trx") && s.Count(c => c == '.') == 2)
+               .Where(s => s.EndsWith(".trx"))
                .ToList();
 
         XDocument doc = new();

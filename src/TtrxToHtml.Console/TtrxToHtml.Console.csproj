@@ -34,11 +34,18 @@
 		<None Remove="Contents\style.css" />
 		<None Remove="Contents\tailwind\tailwind.min.css" />
 		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
-		<None Remove="exapmle1.trx" />
+		<None Remove="exapmle1.trx.old" />
 		<None Remove="exapmle2.trx.old" />
+		<None Remove="MSTest-net6.0-sample.trx.old" />
+		<None Remove="MSTest-net8.0-sample.trx" />
+		<None Remove="Templates\Index.cshtml" />
+		<None Remove="Templates\Index1.cshtml" />
+		<None Remove="Templates\Index2.cshtml" />
 		<None Remove="Templates\JsonData.cshtml" />
 		<None Remove="Templates\JsonData1.cshtml" />
 		<None Remove="Templates\JsonData2.cshtml" />
+		<None Remove="xUnit-net6.0-sample.trx.old" />
+		<None Remove="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -78,12 +85,15 @@
 		<Content Include="Contents\tailwind\tailwindcss-3.4.5.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="exapmle1.trx">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="exapmle2.trx.old">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+		<EmbeddedResource Include="exapmle1.trx.old">
+		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="exapmle2.trx.old" />
+		<EmbeddedResource Include="MSTest-net6.0-sample.trx.old" />
+		<EmbeddedResource Include="MSTest-net8.0-sample.trx" />
+		<EmbeddedResource Include="Templates\Index2.cshtml" />
+		<EmbeddedResource Include="Templates\Index1.cshtml" />
+		<EmbeddedResource Include="Templates\Index.cshtml" />
 		<EmbeddedResource Include="Templates\JsonData1.cshtml">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
@@ -99,6 +109,8 @@
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</EmbeddedResource>
+		<EmbeddedResource Include="xUnit-net6.0-sample.trx.old" />
+		<EmbeddedResource Include="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -2,6 +2,7 @@
 
 public class AppSettings
 {
+    public string TrxFileExt { get; set; }
     public string OutputFileExt { get; set; }
     public string HtmlReportDirectoryFolder { get; set; }
     public string DateTimeFormat { get; set; }

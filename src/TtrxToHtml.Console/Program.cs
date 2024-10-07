@@ -1,4 +1,7 @@
-﻿public class Program
+﻿/// <summary>
+/// Converting trx file to html format
+/// </summary>
+public class Program
 {
     private static async Task Main(string[] args)
     {
@@ -11,8 +14,23 @@
         var appSettings = new AppSettings();
         configuration.GetSection("AppSettings").Bind(appSettings);
 
-        var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console"; // need to modify
-        string json = TrxHelper.CombineAllTrxFilesToOneTrx(sourceDirectory);
+        if (args == null || args.Length != 0)
+        {
+            Console.WriteLine("No trx file");
+            return;
+        }
+
+        string fileExt = Path.GetExtension(args[0]);
+        if (fileExt == appSettings.TrxFileExt)
+        {
+            Console.WriteLine("You have passed wrong file format!");
+            return;
+        }
+
+        Console.WriteLine("Trx File\n{0}", args[0]);
+
+        //var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console";
+        string json = TrxHelper.CombineAllTrxFilesToOneTrx(args[0]);
 
         var testResult = JsonConvert.DeserializeObject<JsonData>(json)!;
 

@@ -28,9 +28,10 @@ public class Program
         }
 
         Console.WriteLine("Trx File\n{0}", args[0]);
+        string json = TrxHelper.CombineAllTrxFilesToOneTrx(args[0]);
 
         //var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console";
-        string json = TrxHelper.CombineAllTrxFilesToOneTrx(args[0]);
+        //string json = TrxHelper.CombineAllTrxFilesToOneTrx(sourceDirectory);
 
         var testResult = JsonConvert.DeserializeObject<JsonData>(json)!;
 

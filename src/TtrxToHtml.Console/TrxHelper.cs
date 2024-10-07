@@ -34,7 +34,7 @@ public static class TrxHelper
 
         string json = JsonConvert.SerializeXmlNode(singleTrxXdoc, Newtonsoft.Json.Formatting.Indented);
 
-        File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "ConvertedTrxToJson.json"), json);
+        //File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "ConvertedTrxToJson.json"), json);
 
         return json;
     }

@@ -40,7 +40,6 @@
 		<None Remove="Templates\JsonData.cshtml" />
 		<None Remove="Templates\JsonData1.cshtml" />
 		<None Remove="Templates\JsonData2.cshtml" />
-		<None Remove="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -74,9 +73,6 @@
 		<Content Include="Contents\tailwind\tailwindcss-3.4.5.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<EmbeddedResource Include="exapmle.trx">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</EmbeddedResource>
 		<EmbeddedResource Include="Templates\Index_working.cshtml" />
 		<EmbeddedResource Include="Templates\Index2.cshtml" />
 		<EmbeddedResource Include="Templates\Index1.cshtml" />
@@ -96,7 +92,6 @@
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</EmbeddedResource>
-		<EmbeddedResource Include="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -16,7 +16,6 @@
 
 	<ItemGroup>
 		<None Remove="Contents\alpinejs\alpinejs.cdn.min.js" />
-		<None Remove="Contents\font-awesome-4.7.0\font-awesome.min.css" />
 		<None Remove="Contents\font-awesome.min.css" />
 		<None Remove="Contents\fonts\Inter\Inter_18pt-Regular.ttf" />
 		<None Remove="Contents\fonts\Inter\OFL.txt" />
@@ -30,29 +29,22 @@
 		<None Remove="Contents\fonts\Roboto\LICENSE.txt" />
 		<None Remove="Contents\fonts\Roboto\Roboto-Regular.ttf" />
 		<None Remove="Contents\img\arrow.png" />
-		<None Remove="Contents\jquery-3.1.1.min.js" />
 		<None Remove="Contents\style.css" />
 		<None Remove="Contents\tailwind\tailwind.min.css" />
 		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
-		<None Remove="exapmle1.trx.old" />
-		<None Remove="exapmle2.trx.old" />
-		<None Remove="MSTest-net6.0-sample.trx.old" />
-		<None Remove="MSTest-net8.0-sample.trx" />
+		<None Remove="exapmle.trx" />
 		<None Remove="Templates\Index.cshtml" />
 		<None Remove="Templates\Index1.cshtml" />
 		<None Remove="Templates\Index2.cshtml" />
+		<None Remove="Templates\Index_working.cshtml" />
 		<None Remove="Templates\JsonData.cshtml" />
 		<None Remove="Templates\JsonData1.cshtml" />
 		<None Remove="Templates\JsonData2.cshtml" />
-		<None Remove="xUnit-net6.0-sample.trx.old" />
 		<None Remove="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<Content Include="Contents\alpinejs\alpinejs.cdn.min.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-		<Content Include="Contents\font-awesome-4.7.0\font-awesome.min.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Contents\fonts\Inter\Inter_18pt-Regular.ttf">
@@ -73,9 +65,6 @@
 		<Content Include="Contents\img\arrow.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\jquery-3.1.1.min.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Contents\style.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
@@ -85,12 +74,10 @@
 		<Content Include="Contents\tailwind\tailwindcss-3.4.5.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<EmbeddedResource Include="exapmle1.trx.old">
+		<EmbeddedResource Include="exapmle.trx">
 		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</EmbeddedResource>
-		<EmbeddedResource Include="exapmle2.trx.old" />
-		<EmbeddedResource Include="MSTest-net6.0-sample.trx.old" />
-		<EmbeddedResource Include="MSTest-net8.0-sample.trx" />
+		<EmbeddedResource Include="Templates\Index_working.cshtml" />
 		<EmbeddedResource Include="Templates\Index2.cshtml" />
 		<EmbeddedResource Include="Templates\Index1.cshtml" />
 		<EmbeddedResource Include="Templates\Index.cshtml" />
@@ -109,7 +96,6 @@
 		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</EmbeddedResource>
-		<EmbeddedResource Include="xUnit-net6.0-sample.trx.old" />
 		<EmbeddedResource Include="xUnit-net8.0-sample.trx" />
 	</ItemGroup>
 

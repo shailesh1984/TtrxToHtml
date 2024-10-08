@@ -41,20 +41,26 @@ public static class TrxHelper
 
     public static void DeepCopy(DirectoryInfo sourceDirectory, string destinationDir, string? dirName = null)
     {
+        var contentPath = string.Empty;
+
         if (!string.IsNullOrEmpty(dirName))
         {
-            DirectoryHelper.CreateDirectory(Path.Combine(destinationDir, dirName));
+            contentPath = Path.Combine(destinationDir, dirName);
+            DirectoryHelper.CreateDirectory(contentPath);
         }
-        
+
+        string finalDestPath = string.IsNullOrEmpty(dirName) ? destinationDir : contentPath;
+
+
         foreach (string dir in Directory.GetDirectories(sourceDirectory.FullName, "*", SearchOption.AllDirectories))
         {
-            string dirToCreate = dir.Replace(sourceDirectory.FullName, destinationDir);
+            string dirToCreate = dir.Replace(sourceDirectory.FullName, finalDestPath);
             Directory.CreateDirectory(dirToCreate);
         }
 
         foreach (string newPath in Directory.GetFiles(sourceDirectory.FullName, "*.*", SearchOption.AllDirectories))
         {
-            File.Copy(newPath, newPath.Replace(sourceDirectory.FullName, destinationDir), true);
+            File.Copy(newPath, newPath.Replace(sourceDirectory.FullName, finalDestPath), true);
         }
     }
 }

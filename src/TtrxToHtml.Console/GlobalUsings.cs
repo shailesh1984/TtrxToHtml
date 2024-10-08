@@ -2,8 +2,11 @@
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Linq;
 global using RazorLight;
+global using System;
 global using System.Diagnostics;
+global using System.Reflection;
 global using System.Xml.Linq;
 global using System.Xml;
-global using TtrxToHtml.Console;
+global using TtrxToHtml.Console.Helpers;
 global using TtrxToHtml.Console.Models;
+global using TtrxToHtml.Console.Service;

@@ -1,57 +1,46 @@
-﻿/// <summary>
+﻿//[assembly: AssemblyVersionAttribute("1.0.0")]
+
+/// <summary>
 /// Converting trx file to html format
 /// </summary>
 public class Program
 {
     private static async Task Main(string[] args)
     {
-        var builder = new ConfigurationBuilder();
-        builder.SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        var arguments = CommandLineArgumentsHelper.ParseArguments(args);
 
-        IConfigurationRoot configuration = builder.Build();
-
-        var appSettings = new AppSettings();
-        configuration.GetSection("AppSettings").Bind(appSettings);
-
-        if (args.Length <= 0)
+        if (arguments.Count == 0 || arguments.ContainsKey("-h") || arguments.ContainsKey("--help"))
         {
-            Console.WriteLine("No arguments provided.");
+            CommandLineArgumentsHelper.PrintHelp();
             return;
         }
 
-        Console.WriteLine("Converting trx file to html format is in process...");
-
-        string fileExt = Path.GetExtension(args[0]);
-        if (fileExt == appSettings.TrxFileExt)
+        if (arguments.ContainsKey("--info"))
         {
-            Console.WriteLine("There is no trx files in this location.");
-            return;
+            CommandLineArgumentsHelper.PrintInfo();
         }
 
-        string json = TrxHelper.CombineAllTrxFilesToOneTrx(args[0]);
+        var trxDirPath = string.Empty;
+        if (arguments.ContainsKey("-tdp") || arguments.ContainsKey("--trx-dir-path"))
+        {
+            if (arguments.TryGetValue("-tdp", out string? tdpValue))
+            {
+                trxDirPath = !string.IsNullOrEmpty(tdpValue) ? tdpValue : string.Empty;
+            }
 
-        var testResult = JsonConvert.DeserializeObject<JsonData>(json)!;
+            if (arguments.TryGetValue("--trx-dir-path", out string? trxDirPathValue))
+            {
+                trxDirPath = !string.IsNullOrEmpty(trxDirPathValue) ? trxDirPathValue : string.Empty;
+            }
 
-        var engine = new RazorLightEngineBuilder()
-            .UseEmbeddedResourcesProject(typeof(Program).Assembly, "TtrxToHtml.Console.Templates")
-            .UseMemoryCachingProvider()
-            .Build();
+            Console.WriteLine($"Trx source directory path: {trxDirPath}");
+        }
 
-        string html = await engine.CompileRenderAsync(appSettings.CshtmlFileName, testResult);
+        //if (arguments.TryGetValue("--output", out string? outputValue))
+        //{
+        //    Console.WriteLine($"Output file: {outputValue}");
+        //}
 
-        var path = AppDomain.CurrentDomain.BaseDirectory;
-        var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);
-
-        string directoryPath = Path.Combine(path, appSettings.HtmlReportDirectoryFolder);
-
-        bool exists = Directory.Exists(directoryPath);
-
-        if (!exists)
-            Directory.CreateDirectory(directoryPath);
-
-        var testReportFile = Path.Combine(directoryPath, appSettings.TestReportFileName + dateTime + appSettings.OutputFileExt);
-        await File.WriteAllTextAsync(testReportFile, html);
-        Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
+        await GenerateTrxReportService.GenerateTrxReport(trxDirPath);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace TtrxToHtml.Console;
+﻿namespace TtrxToHtml.Console.Helpers;
 
 public static class TrxHelper
 {
@@ -37,5 +37,19 @@ public static class TrxHelper
         //File.WriteAllText(Path.Combine(Environment.CurrentDirectory, "ConvertedTrxToJson.json"), json);
 
         return json;
+    }
+
+    public static void DeepCopy(DirectoryInfo sourceDirectory, string destinationDir)
+    {
+        foreach (string dir in Directory.GetDirectories(sourceDirectory.FullName, "*", SearchOption.AllDirectories))
+        {
+            string dirToCreate = dir.Replace(sourceDirectory.FullName, destinationDir);
+            Directory.CreateDirectory(dirToCreate);
+        }
+
+        foreach (string newPath in Directory.GetFiles(sourceDirectory.FullName, "*.*", SearchOption.AllDirectories))
+        {
+            File.Copy(newPath, newPath.Replace(sourceDirectory.FullName, destinationDir), true);
+        }
     }
 }

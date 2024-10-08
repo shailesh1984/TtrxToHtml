@@ -14,24 +14,22 @@ public class Program
         var appSettings = new AppSettings();
         configuration.GetSection("AppSettings").Bind(appSettings);
 
-        if (args == null || args.Length != 0)
+        if (args.Length <= 0)
         {
-            Console.WriteLine("No trx file");
+            Console.WriteLine("No arguments provided.");
             return;
         }
+
+        Console.WriteLine("Converting trx file to html format is in process...");
 
         string fileExt = Path.GetExtension(args[0]);
         if (fileExt == appSettings.TrxFileExt)
         {
-            Console.WriteLine("You have passed wrong file format!");
+            Console.WriteLine("There is no trx files in this location.");
             return;
         }
 
-        Console.WriteLine("Trx File\n{0}", args[0]);
         string json = TrxHelper.CombineAllTrxFilesToOneTrx(args[0]);
-
-        //var sourceDirectory = @"C:\Personal\Work\TtrxToHtml\src\TtrxToHtml.Console";
-        //string json = TrxHelper.CombineAllTrxFilesToOneTrx(sourceDirectory);
 
         var testResult = JsonConvert.DeserializeObject<JsonData>(json)!;
 

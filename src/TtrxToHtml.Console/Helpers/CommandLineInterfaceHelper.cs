@@ -9,7 +9,7 @@ public static class CommandLineInterfaceHelper
         if (arguments.Count == 0 || arguments.ContainsKey("-h") || arguments.ContainsKey("--help"))
         {
             CommandLineArgumentsHelper.PrintHelp();
-            //return;
+            return string.Empty;
         }
 
         if (arguments.ContainsKey("--info"))

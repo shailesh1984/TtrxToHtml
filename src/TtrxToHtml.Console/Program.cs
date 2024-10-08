@@ -9,6 +9,11 @@ public class Program
     {
         var trxDirPath = CommandLineInterfaceHelper.ArgumentsHelper(args);
 
+        if (string.IsNullOrEmpty(trxDirPath))
+        {
+            return;
+        }
+
         await GenerateTrxReportService.GenerateTrxReport(trxDirPath);
     }
 }

@@ -2,6 +2,8 @@
 
 public static class GenerateTrxReportService
 {
+    private static string CONTENTS_FOLDER = "Contents";
+
     /// <summary>
     /// Generate trx report in html
     /// </summary>
@@ -40,15 +42,12 @@ public static class GenerateTrxReportService
 
         string directoryPath = Path.Combine(trxDirPath, appSettings.HtmlReportDirectoryFolder!);
 
-        bool exists = Directory.Exists(directoryPath);
-
-        if (!exists)
-            Directory.CreateDirectory(directoryPath);
+        DirectoryHelper.CreateDirectory(directoryPath);
 
         var testReportFile = Path.Combine(directoryPath, appSettings.TestReportFileName + dateTime + appSettings.OutputFileExt);
 
-        var sourceContentsDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, "Contents"));
-        TrxHelper.DeepCopy(sourceContentsDir, directoryPath);
+        var sourceContentsDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, CONTENTS_FOLDER));
+        TrxHelper.DeepCopy(sourceContentsDir, directoryPath, CONTENTS_FOLDER);
 
         await File.WriteAllTextAsync(testReportFile, html);
         Process.Start(@"cmd.exe ", $@"/c {testReportFile}");

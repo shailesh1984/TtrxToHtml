@@ -39,8 +39,13 @@ public static class TrxHelper
         return json;
     }
 
-    public static void DeepCopy(DirectoryInfo sourceDirectory, string destinationDir)
+    public static void DeepCopy(DirectoryInfo sourceDirectory, string destinationDir, string? dirName = null)
     {
+        if (!string.IsNullOrEmpty(dirName))
+        {
+            DirectoryHelper.CreateDirectory(Path.Combine(destinationDir, dirName));
+        }
+        
         foreach (string dir in Directory.GetDirectories(sourceDirectory.FullName, "*", SearchOption.AllDirectories))
         {
             string dirToCreate = dir.Replace(sourceDirectory.FullName, destinationDir);

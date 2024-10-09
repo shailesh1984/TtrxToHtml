@@ -30,16 +30,9 @@
 		<None Remove="Contents\fonts\Roboto\Roboto-Regular.ttf" />
 		<None Remove="Contents\img\arrow.png" />
 		<None Remove="Contents\style.css" />
-		<None Remove="Contents\tailwind\tailwind.min.css" />
 		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
 		<None Remove="exapmle.trx" />
 		<None Remove="Templates\Index.cshtml" />
-		<None Remove="Templates\Index1.cshtml" />
-		<None Remove="Templates\Index2.cshtml" />
-		<None Remove="Templates\Index_working.cshtml" />
-		<None Remove="Templates\JsonData.cshtml" />
-		<None Remove="Templates\JsonData1.cshtml" />
-		<None Remove="Templates\JsonData2.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,31 +60,10 @@
 		<Content Include="Contents\style.css">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<Content Include="Contents\tailwind\tailwind.min.css">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
 		<Content Include="Contents\tailwind\tailwindcss-3.4.5.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
-		<EmbeddedResource Include="Templates\Index_working.cshtml" />
-		<EmbeddedResource Include="Templates\Index2.cshtml" />
-		<EmbeddedResource Include="Templates\Index1.cshtml" />
 		<EmbeddedResource Include="Templates\Index.cshtml" />
-		<EmbeddedResource Include="Templates\JsonData1.cshtml">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</EmbeddedResource>
-		<EmbeddedResource Include="Templates\JsonData.cshtml">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</EmbeddedResource>
-		<EmbeddedResource Include="Templates\JsonData2.cshtml">
-		  <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		  <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-		  <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>

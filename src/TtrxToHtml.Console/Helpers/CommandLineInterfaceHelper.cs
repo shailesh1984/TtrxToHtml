@@ -61,6 +61,7 @@ public static class CommandLineInterfaceHelper
             }
 
             System.Console.WriteLine($"Trx source directory path: {TRX_PATH}");
+            commandLineInterfaceValues.TrxPath = TRX_PATH;
         }
 
         if (arguments.ContainsKey("-f") || arguments.ContainsKey("--tfp"))

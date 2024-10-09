@@ -8,8 +8,10 @@ public static class GenerateTrxReportService
     /// Generate trx report in html
     /// </summary>
     /// <param name="trxDirPath"></param>
-    public static async Task GenerateTrxReport(AppSettings appSettings, string trxDirPath)
+    public static async Task GenerateTrxReport(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
+        var trxDirPath = commandLineInterfaceValues.TrxPath!;
+
         string fileExt = Path.GetExtension(trxDirPath);
 
         var trxFiles = new List<string>();
@@ -41,7 +43,8 @@ public static class GenerateTrxReportService
         
         DirectoryHelper.CreateDirectory(directoryPath);
 
-        var testReportFile = Path.Combine(directoryPath, appSettings.TestReportFileName + dateTime + appSettings.OutputFileExt);
+        var testReportFileName = string.IsNullOrEmpty(commandLineInterfaceValues.HtmlFileName) ? appSettings.TestReportFileName : string.Concat(commandLineInterfaceValues.HtmlFileName, "_");
+        var testReportFile = Path.Combine(directoryPath, testReportFileName + dateTime + appSettings.OutputFileExt);
 
         var sourceContentsDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, CONTENTS_FOLDER));
         TrxHelper.DeepCopy(sourceContentsDir, directoryPath, CONTENTS_FOLDER);

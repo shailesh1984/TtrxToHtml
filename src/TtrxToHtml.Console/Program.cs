@@ -16,13 +16,13 @@ public class Program
         var appSettings = new AppSettings();
         configuration.GetSection("AppSettings").Bind(appSettings);
 
-        var trxDirPath = CommandLineInterfaceHelper.ArgumentsHelper(appSettings, args);
+        var commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appSettings, args);
 
-        if (string.IsNullOrEmpty(trxDirPath))
+        if (string.IsNullOrEmpty(commandLineInterfaceValues.TrxPath))
         {
             return;
         }
 
-        await GenerateTrxReportService.GenerateTrxReport(appSettings, trxDirPath);
+        await GenerateTrxReportService.GenerateTrxReport(appSettings, commandLineInterfaceValues);
     }
 }

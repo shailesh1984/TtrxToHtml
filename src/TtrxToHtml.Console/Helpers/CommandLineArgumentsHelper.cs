@@ -21,7 +21,7 @@ public static class CommandLineArgumentsHelper
             }
             else
             {
-                arguments[arg] = null;
+                arguments[arg] = null!;
             }
         }
 

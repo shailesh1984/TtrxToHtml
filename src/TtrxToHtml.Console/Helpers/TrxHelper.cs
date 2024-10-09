@@ -2,17 +2,14 @@
 
 public static class TrxHelper
 {
-    public static string CombineAllTrxFilesToOneTrx(string sourceDirectory)
+    public static string CombineAllTrxFilesToOneTrx(IEnumerable<string> trxFiles)
     {
-        var trxFiles = Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories)
-               .Where(s => s.EndsWith(".trx"))
-               .ToList();
-
         XDocument doc = new();
         XElement rootElement = new("TestResults");
 
         foreach (var trxFile in trxFiles)
         {
+            System.Console.WriteLine(trxFile);
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(trxFile);
             var xElem = XElement.Parse(xmlDoc.LastChild.OuterXml);

@@ -20,14 +20,27 @@ public static class GenerateTrxReportService
         configuration.GetSection("AppSettings").Bind(appSettings);
 
         string fileExt = Path.GetExtension(trxDirPath);
-        if (fileExt == appSettings.TrxFileExt)
+        //if (fileExt != appSettings.TrxFileExt)
+        //{
+        //    System.Console.WriteLine("There are no trx files in the provided location.");
+        //    return;
+        //}
+
+        var trxFiles = new List<string>();
+        if (string.IsNullOrEmpty(fileExt))
         {
-            System.Console.WriteLine("There are no trx files in the provided.");
-            return;
+            trxFiles = Directory.EnumerateFiles(trxDirPath, "*", SearchOption.AllDirectories)
+               .Where(s => s.EndsWith(".trx"))
+               .ToList();
+        }
+        else
+        {
+            trxFiles.Add(trxDirPath);
+            trxDirPath = Path.GetDirectoryName(trxDirPath)!;
         }
 
         System.Console.WriteLine("Processing the trx file into html format.");
-        string json = TrxHelper.CombineAllTrxFilesToOneTrx(trxDirPath);
+        string json = TrxHelper.CombineAllTrxFilesToOneTrx(trxFiles);
 
         var testResult = JsonConvert.DeserializeObject<JsonData>(json)!;
 
@@ -41,7 +54,7 @@ public static class GenerateTrxReportService
         var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);
 
         string directoryPath = Path.Combine(trxDirPath, appSettings.HtmlReportDirectoryFolder!);
-
+        
         DirectoryHelper.CreateDirectory(directoryPath);
 
         var testReportFile = Path.Combine(directoryPath, appSettings.TestReportFileName + dateTime + appSettings.OutputFileExt);

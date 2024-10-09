@@ -7,13 +7,22 @@ public class Program
 {
     private static async Task Main(string[] args)
     {
-        var trxDirPath = CommandLineInterfaceHelper.ArgumentsHelper(args);
+        var builder = new ConfigurationBuilder();
+        builder.SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+        IConfigurationRoot configuration = builder.Build();
+
+        var appSettings = new AppSettings();
+        configuration.GetSection("AppSettings").Bind(appSettings);
+
+        var trxDirPath = CommandLineInterfaceHelper.ArgumentsHelper(appSettings, args);
 
         if (string.IsNullOrEmpty(trxDirPath))
         {
             return;
         }
 
-        await GenerateTrxReportService.GenerateTrxReport(trxDirPath);
+        await GenerateTrxReportService.GenerateTrxReport(appSettings, trxDirPath);
     }
 }

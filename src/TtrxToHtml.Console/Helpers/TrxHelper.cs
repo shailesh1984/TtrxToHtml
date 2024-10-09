@@ -2,10 +2,12 @@
 
 public static class TrxHelper
 {
+    private static string TEST_RESULTS_XNAME = "TestResults";
+
     public static string CombineAllTrxFilesToOneTrx(IEnumerable<string> trxFiles)
     {
         XDocument doc = new();
-        XElement rootElement = new("TestResults");
+        XElement rootElement = new(TEST_RESULTS_XNAME);
 
         foreach (var trxFile in trxFiles)
         {

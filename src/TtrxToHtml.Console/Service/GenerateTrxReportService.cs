@@ -8,30 +8,14 @@ public static class GenerateTrxReportService
     /// Generate trx report in html
     /// </summary>
     /// <param name="trxDirPath"></param>
-    public static async Task GenerateTrxReport(string trxDirPath)
+    public static async Task GenerateTrxReport(AppSettings appSettings, string trxDirPath)
     {
-        var builder = new ConfigurationBuilder();
-        builder.SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-        IConfigurationRoot configuration = builder.Build();
-
-        var appSettings = new AppSettings();
-        configuration.GetSection("AppSettings").Bind(appSettings);
-
         string fileExt = Path.GetExtension(trxDirPath);
-        //if (fileExt != appSettings.TrxFileExt)
-        //{
-        //    System.Console.WriteLine("There are no trx files in the provided location.");
-        //    return;
-        //}
 
         var trxFiles = new List<string>();
         if (string.IsNullOrEmpty(fileExt))
         {
-            trxFiles = Directory.EnumerateFiles(trxDirPath, "*", SearchOption.AllDirectories)
-               .Where(s => s.EndsWith(".trx"))
-               .ToList();
+            trxFiles = PathHelper.GetAllFilesBySpecifiedDirPath(trxDirPath);
         }
         else
         {

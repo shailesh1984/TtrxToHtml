@@ -9,7 +9,6 @@ public static class TrxHelper
 
         foreach (var trxFile in trxFiles)
         {
-            System.Console.WriteLine(trxFile);
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(trxFile);
             var xElem = XElement.Parse(xmlDoc.LastChild.OuterXml);
@@ -59,5 +58,13 @@ public static class TrxHelper
         {
             File.Copy(newPath, newPath.Replace(sourceDirectory.FullName, finalDestPath), true);
         }
+    }
+
+    public static Tuple<bool, bool> IsPathFileOrDirectory(string path)
+    {
+        bool isFile = File.Exists(path);
+        bool isDirectory = Directory.Exists(path);
+
+        return Tuple.Create(isFile, isDirectory);
     }
 }

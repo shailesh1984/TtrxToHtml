@@ -8,12 +8,12 @@ public class Program
     private static async Task Main(string[] args)
     {
         var trxDirPath = CommandLineInterfaceHelper.ArgumentsHelper(args);
-        
+
         if (string.IsNullOrEmpty(trxDirPath))
         {
             return;
         }
-        
+
         await GenerateTrxReportService.GenerateTrxReport(trxDirPath);
     }
 }

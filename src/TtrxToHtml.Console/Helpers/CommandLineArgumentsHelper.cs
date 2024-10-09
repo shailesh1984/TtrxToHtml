@@ -38,9 +38,10 @@ public static class CommandLineArgumentsHelper
     {
         System.Console.WriteLine("\nUsage: TtrxToHtml.Console [options]\n");
         System.Console.WriteLine("Options:");
-        System.Console.WriteLine("  -h|--help                               Display help.");
-        System.Console.WriteLine("  --info                                  Display TtrxToHtml.Console Information.");
-        System.Console.WriteLine("  -tdp=<directory-path>|--trx-dir-path=<directory-path>    Specify trx directory path.");
+        System.Console.WriteLine("  -h|--help                   Display help.");
+        System.Console.WriteLine("  --info                      Display TtrxToHtml.Console Information.");
+        System.Console.WriteLine("  -d|--tdp=<directory-path>   Specify trx directory path.");
+        System.Console.WriteLine("  -f|--tfp=<file-path>        Specify trx file path.");
         //System.Console.WriteLine("  --output=<file>    Specify output file");
     }
 

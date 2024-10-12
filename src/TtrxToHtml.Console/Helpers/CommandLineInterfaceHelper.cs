@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace TtrxToHtml.Console.Helpers;
+﻿namespace TtrxToHtml.Console.Helpers;
 
 public static class CommandLineInterfaceHelper
 {
@@ -119,10 +117,10 @@ public static class CommandLineInterfaceHelper
             commandLineInterfaceValues.HtmlFileName = HTML_FILE_NAME;
         }
 
-        //if (arguments.TryGetValue("--output", out string? outputValue))
-        //{
-        //    System.Console.WriteLine($"Output file: {outputValue}");
-        //}
+        if (arguments.TryGetValue("--output", out string? outputFilePathValue))
+        {
+            System.Console.WriteLine($"Output file: {outputFilePathValue}");
+        }
 
         return commandLineInterfaceValues;
     }

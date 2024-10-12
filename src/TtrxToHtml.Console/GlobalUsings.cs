@@ -1,4 +1,5 @@
-﻿global using Microsoft.Extensions.Configuration;
+﻿global using Cocona;
+global using Microsoft.Extensions.Configuration;
 global using Newtonsoft.Json;
 global using Newtonsoft.Json.Linq;
 global using RazorLight;
@@ -8,5 +9,6 @@ global using System.Reflection;
 global using System.Xml.Linq;
 global using System.Xml;
 global using TtrxToHtml.Console.Helpers;
+global using TtrxToHtml.Console.Interfaces;
 global using TtrxToHtml.Console.Models;
 global using TtrxToHtml.Console.Service;

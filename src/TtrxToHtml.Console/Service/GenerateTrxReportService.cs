@@ -1,14 +1,14 @@
 ﻿namespace TtrxToHtml.Console.Service;
 
-public static class GenerateTrxReportService
+public class GenerateTrxReportService : IGenerateTrxReportService
 {
-    private static string CONTENTS_FOLDER = "Contents";
+    private static readonly string CONTENTS_FOLDER = "Contents";
 
     /// <summary>
     /// Generate trx report in html
     /// </summary>
     /// <param name="trxDirPath"></param>
-    public static async Task GenerateTrxReport(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
+    public async Task<string> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
         var trxDirPath = commandLineInterfaceValues.TrxPath!;
 
@@ -40,7 +40,7 @@ public static class GenerateTrxReportService
         var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);
 
         string directoryPath = Path.Combine(trxDirPath, appSettings.HtmlReportDirectoryFolder!);
-        
+
         DirectoryHelper.CreateDirectory(directoryPath);
 
         var testReportFileName = string.IsNullOrEmpty(commandLineInterfaceValues.HtmlFileName) ? appSettings.TestReportFileName : string.Concat(commandLineInterfaceValues.HtmlFileName, "_");
@@ -50,6 +50,8 @@ public static class GenerateTrxReportService
         TrxHelper.DeepCopy(sourceContentsDir, directoryPath, CONTENTS_FOLDER);
 
         await File.WriteAllTextAsync(testReportFile, html);
-        Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
+        //Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
+        
+        return testReportFile;
     }
 }

@@ -1,0 +1,8 @@
+1. goto solution path
+2. open path in command prompt
+3. execute - dotnet test TtrxToHtml.sln --collect:"XPlat Code Coverage" OR dotnet-coverage collect dotnet test TtrxToHtml.sln -f xml  -o coverage.xml
+	ex: C:\Personal\Work\TtrxToHtml\src>dotnet test TtrxToHtml.sln --collect:"XPlat Code Coverage"
+	
+NOTE : 
+dotnet-coverage collect 'dotnet test path/to/project/solution.sln' -f xml  -o coverage.xml
+dotnet test --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:Include=[coverlet.*]* -verbosity:diagnostic -bl:msbuild.binlog -noconsolelogger -- RunConfiguration.DisableAppDomain=true

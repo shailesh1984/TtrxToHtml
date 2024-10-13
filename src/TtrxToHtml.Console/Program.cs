@@ -1,39 +1,33 @@
-﻿//[assembly: AssemblyVersionAttribute("1.0.0")]
-
-
-//[HasSubCommands(typeof(NestedCommands))]
-using Microsoft.Extensions.DependencyInjection;
-
-
-//[HasSubCommands(typeof(NestedCommands))]
-using static System.Net.Mime.MediaTypeNames;
-
-/// <summary>
+﻿/// <summary>
 /// Converting trx file to html format
 /// </summary>
+
+//[assembly: AssemblyVersionAttribute("1.0.0")]
 
 //[HasSubCommands(typeof(NestedCommands))]
 public class Program
 {
     private static async Task Main(string[] args)
     {
-        //CoconaApp.Run<Program>(
-        //    args,
-        //    options =>
-        //    {
-        //        options.EnableShellCompletionSupport = true;
-        //    }
-        //);
+        #region Cocona
+            //CoconaApp.Run<Program>(
+            //    args,
+            //    options =>
+            //    {
+            //        options.EnableShellCompletionSupport = true;
+            //    }
+            //);
 
-        //var builder = CoconaApp.CreateBuilder();
-        //var app = builder.Build();
+            //var builder = CoconaApp.CreateBuilder();
+            //var app = builder.Build();
 
-        //app.AddCommand(([Argument("n", Description = "Enter name")]string name, [Option("a", Description = "Enter age")]int age) => 
-        //{
-        //    Console.WriteLine($"Hello {name}, age {age}");
-        //});
+            //app.AddCommand(([Argument("n", Description = "Enter name")]string name, [Option("a", Description = "Enter age")]int age) => 
+            //{
+            //    Console.WriteLine($"Hello {name}, age {age}");
+            //});
 
-        //app.Run();
+            //app.Run();
+        #endregion
 
         var builder = new ConfigurationBuilder();
         builder.SetBasePath(Directory.GetCurrentDirectory())
@@ -53,8 +47,9 @@ public class Program
 
         var serviceProvider = CreateServices();
 
-        var app = serviceProvider.GetService<IGenerateTrxReportService>()!;
-        var testReportFile = await app.GenerateTrxReportAsync(appSettings, commandLineInterfaceValues);
+        var generateTrxReportService = serviceProvider.GetService<IGenerateTrxReportService>()!;
+        var trxReport = await generateTrxReportService.GenerateTrxReportAsync(appSettings, commandLineInterfaceValues);
+        var testReportFile = await generateTrxReportService.CreateHtmlAsync(trxReport, appSettings, commandLineInterfaceValues);
         Process.Start(@"cmd.exe ", $"/c \"{testReportFile}\"");
     }
 

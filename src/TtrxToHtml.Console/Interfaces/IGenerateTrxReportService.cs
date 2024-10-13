@@ -2,5 +2,6 @@
 
 public interface IGenerateTrxReportService
 {
-    public Task<string> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues);
+    public Task<TrxReport> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues);
+    public Task<string> CreateHtmlAsync(TrxReport trxReport, AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues);
 }

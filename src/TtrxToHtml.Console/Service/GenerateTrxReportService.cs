@@ -8,7 +8,7 @@ public class GenerateTrxReportService : IGenerateTrxReportService
     /// Generate trx report in html
     /// </summary>
     /// <param name="trxDirPath"></param>
-    public async Task<string> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
+    public async Task<TrxReport> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
         var trxDirPath = commandLineInterfaceValues.TrxPath!;
 
@@ -37,21 +37,30 @@ public class GenerateTrxReportService : IGenerateTrxReportService
 
         string html = await engine.CompileRenderAsync(appSettings.CshtmlFileName, testResult);
 
+        var trxReport = new TrxReport
+        {
+            Html = html,
+            Path = trxDirPath
+        };
+        
+        return trxReport;
+    }
+
+    public async Task<string> CreateHtmlAsync(TrxReport trxReport, AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
+    {
         var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);
 
-        string directoryPath = Path.Combine(trxDirPath, appSettings.HtmlReportDirectoryFolder!);
+        string directoryPath = Path.Combine(trxReport.Path!, appSettings.HtmlReportDirectoryFolder!);
 
         DirectoryHelper.CreateDirectory(directoryPath);
-
         var testReportFileName = string.IsNullOrEmpty(commandLineInterfaceValues.HtmlFileName) ? appSettings.TestReportFileName : string.Concat(commandLineInterfaceValues.HtmlFileName, "_");
         var testReportFile = Path.Combine(directoryPath, testReportFileName + dateTime + appSettings.OutputFileExt);
-
         var sourceContentsDir = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, CONTENTS_FOLDER));
         TrxHelper.DeepCopy(sourceContentsDir, directoryPath, CONTENTS_FOLDER);
 
-        await File.WriteAllTextAsync(testReportFile, html);
+        await File.WriteAllTextAsync(testReportFile, trxReport.Html);
         //Process.Start(@"cmd.exe ", $@"/c {testReportFile}");
-        
+
         return testReportFile;
     }
 }

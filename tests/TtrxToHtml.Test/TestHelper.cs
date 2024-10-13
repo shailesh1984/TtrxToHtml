@@ -14,4 +14,19 @@ public static class TestHelper
 
         return appSettings;
     }
+
+    public static bool IsContainsHTMLElements(string html)
+    {
+        Regex tagRegex = new(@"<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>");
+
+        return tagRegex.IsMatch(html);
+    }
+
+    public static string ReadFile(string resourceName)
+    {
+        using Stream resourceStream = Utility.GetEmbeddedResourceStream(resourceName);
+        using StreamReader reader = new StreamReader(resourceStream);
+
+        return reader.ReadToEnd();
+    }
 }

@@ -49,9 +49,9 @@ public class GenerateTrxReportService : IGenerateTrxReportService
     public async Task<string> CreateHtmlAsync(TrxReport trxReport, AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
         var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);
-
-        string directoryPath = Path.Combine(trxReport.Path!, appSettings.HtmlReportDirectoryFolder!);
-
+        var outputPath = string.IsNullOrEmpty(commandLineInterfaceValues.OutPutFilePath) ? trxReport.Path! : commandLineInterfaceValues.OutPutFilePath;
+        string directoryPath = Path.Combine(outputPath, appSettings.HtmlReportDirectoryFolder!);
+        
         DirectoryHelper.CreateDirectory(directoryPath);
         var testReportFileName = string.IsNullOrEmpty(commandLineInterfaceValues.HtmlFileName) ? appSettings.TestReportFileName : string.Concat(commandLineInterfaceValues.HtmlFileName, "_");
         var testReportFile = Path.Combine(directoryPath, testReportFileName + dateTime + appSettings.OutputFileExt);

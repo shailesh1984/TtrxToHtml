@@ -3,8 +3,7 @@
 public static class CommandLineInterfaceHelper
 {
     private static string TRX_PATH = string.Empty;
-    private static string HTML_FILE_NAME = string.Empty;
-
+    
     private static readonly CommandLineInterfaceValues commandLineInterfaceValues = new();
 
     public static CommandLineInterfaceValues ArgumentsHelper(AppSettings appSettings, string[] args)
@@ -42,10 +41,7 @@ public static class CommandLineInterfaceHelper
             
             Tuple<bool, bool> isPathFileOrDirectory = TrxHelper.IsPathFileOrDirectory(TRX_PATH);
 
-            bool isFile = isPathFileOrDirectory.Item1;
-            bool isDirectory = isPathFileOrDirectory.Item2;
-
-            if (!isDirectory && isFile)
+            if (!isPathFileOrDirectory.Item2 && isPathFileOrDirectory.Item1)
             {
                 System.Console.WriteLine($"You need to specify the trx source directory path, not file path");
                 return commandLineInterfaceValues;
@@ -82,10 +78,7 @@ public static class CommandLineInterfaceHelper
 
             Tuple<bool, bool> isPathFileOrDirectory = TrxHelper.IsPathFileOrDirectory(TRX_PATH);
 
-            bool isFile = isPathFileOrDirectory.Item1;
-            bool isDirectory = isPathFileOrDirectory.Item2;
-
-            if (isDirectory && !isFile)
+            if (isPathFileOrDirectory.Item2 && !isPathFileOrDirectory.Item1)
             {
                 System.Console.WriteLine($"You need to specify the trx source file path, not directory path");
                 return commandLineInterfaceValues;
@@ -106,20 +99,26 @@ public static class CommandLineInterfaceHelper
         {
             if (arguments.TryGetValue("-hfn", out string? hfileName))
             {
-                HTML_FILE_NAME = hfileName;
+                commandLineInterfaceValues.HtmlFileName = hfileName;
             }
 
             if (arguments.TryGetValue("--html-file-name", out string? hFileName))
             {
-                HTML_FILE_NAME = hFileName;
+                commandLineInterfaceValues.HtmlFileName = hFileName;
             }
-
-            commandLineInterfaceValues.HtmlFileName = HTML_FILE_NAME;
         }
 
-        if (arguments.TryGetValue("--output", out string? outputFilePathValue))
+        if (arguments.ContainsKey("-o") || arguments.ContainsKey("--output"))
         {
-            System.Console.WriteLine($"Output file: {outputFilePathValue}");
+            if (arguments.TryGetValue("-o", out string? oFilePathValue))
+            {
+                commandLineInterfaceValues.OutPutFilePath = oFilePathValue;
+            }
+
+            if (arguments.TryGetValue("--output", out string? outputFilePathValue))
+            {
+                commandLineInterfaceValues.OutPutFilePath = outputFilePathValue;
+            }
         }
 
         return commandLineInterfaceValues;

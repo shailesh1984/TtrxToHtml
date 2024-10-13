@@ -48,18 +48,16 @@ public class Program
         var serviceProvider = CreateServices();
 
         var generateTrxReportService = serviceProvider.GetService<IGenerateTrxReportService>()!;
-        var trxReport = await generateTrxReportService.GenerateTrxReportAsync(appSettings, commandLineInterfaceValues);
+        var trxReport = await generateTrxReportService.ConvertTrxToHtmlAsync(appSettings, commandLineInterfaceValues);
         var testReportFile = await generateTrxReportService.CreateHtmlAsync(trxReport, appSettings, commandLineInterfaceValues);
         Process.Start(@"cmd.exe ", $"/c \"{testReportFile}\"");
     }
 
     private static ServiceProvider CreateServices()
     {
-        var serviceProvider = new ServiceCollection()
+        return new ServiceCollection()
             .AddScoped<IGenerateTrxReportService, GenerateTrxReportService>()
             .BuildServiceProvider();
-
-        return serviceProvider;
     }
 
     //[Command(Description = "A dotnet cli program")]

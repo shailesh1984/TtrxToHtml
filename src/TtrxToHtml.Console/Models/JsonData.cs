@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json.Serialization;
-using System.ComponentModel;
-
-namespace TtrxToHtml.Console.Models;
+﻿namespace TtrxToHtml.Console.Models;
 
 public partial class JsonData
 {

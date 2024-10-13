@@ -13,7 +13,7 @@ public static class TrxHelper
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(trxFile);
-            var xElem = XElement.Parse(xmlDoc.LastChild.OuterXml);
+            var xElem = XElement.Parse(xmlDoc.LastChild!.OuterXml);
 
             rootElement.Add(new XElement(xElem));
         }

@@ -5,10 +5,12 @@ public class GenerateTrxReportService : IGenerateTrxReportService
     private static readonly string CONTENTS_FOLDER = "Contents";
 
     /// <summary>
-    /// Generate trx report in html
+    /// Convert trx to html
     /// </summary>
-    /// <param name="trxDirPath"></param>
-    public async Task<TrxReport> GenerateTrxReportAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
+    /// <param name="appSettings"></param>
+    /// <param name="commandLineInterfaceValues"></param>
+    /// <returns></returns>
+    public async Task<TrxReport> ConvertTrxToHtmlAsync(AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
         var trxDirPath = commandLineInterfaceValues.TrxPath!;
 
@@ -46,6 +48,13 @@ public class GenerateTrxReportService : IGenerateTrxReportService
         return trxReport;
     }
 
+    /// <summary>
+    /// Generate trx report in html
+    /// </summary>
+    /// <param name="trxReport"></param>
+    /// <param name="appSettings"></param>
+    /// <param name="commandLineInterfaceValues"></param>
+    /// <returns></returns>
     public async Task<string> CreateHtmlAsync(TrxReport trxReport, AppSettings appSettings, CommandLineInterfaceValues commandLineInterfaceValues)
     {
         var dateTime = DateTime.Now.ToString(appSettings.DateTimeFormat);

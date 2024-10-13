@@ -3,7 +3,6 @@
 public static class CommandLineInterfaceHelper
 {
     private static string TRX_PATH = string.Empty;
-    
     private static readonly CommandLineInterfaceValues commandLineInterfaceValues = new();
 
     public static CommandLineInterfaceValues ArgumentsHelper(AppSettings appSettings, string[] args)

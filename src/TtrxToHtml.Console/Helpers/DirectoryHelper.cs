@@ -4,9 +4,7 @@ public static class DirectoryHelper
 {
     public static void CreateDirectory(string directoryPath)
     {
-        bool exists = Directory.Exists(directoryPath);
-        
-        if (!exists)
+        if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
     }
 }

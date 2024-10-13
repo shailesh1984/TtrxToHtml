@@ -5,22 +5,20 @@ public class GenerateTrxReportServiceTest
     [Fact]
     public async Task GenerateTrxReportTest()
     {
-        var path = Utility.TestDataFilePath();
-
         // ARRANGE
         var appConfig = TestHelper.InitConfiguration();
-        string[] args = { $@"-f={path}" };
+        string[] args = [$@"-f={Utility.TestDataFilePath()}"];
         var commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appConfig, args);
 
         // ACT
-        IGenerateTrxReportService generateTrxReportService = new GenerateTrxReportService();
-        var actual = await generateTrxReportService.GenerateTrxReportAsync(appConfig, commandLineInterfaceValues);
+        var generateTrxReportService = new GenerateTrxReportService();
+        var actual = await generateTrxReportService.ConvertTrxToHtmlAsync(appConfig, commandLineInterfaceValues);
 
         // ASSERT
         Assert.NotNull(actual);
         Assert.IsType<TrxReport>(actual);
 
-        var res = TestHelper.IsContainsHTMLElements(actual.Html!);
+        var res = RegexHelper.DoesItContainsHtml(actual.Html!);
         Assert.True(res);
     }
 }

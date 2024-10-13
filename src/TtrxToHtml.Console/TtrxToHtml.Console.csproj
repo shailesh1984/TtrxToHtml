@@ -12,29 +12,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Contents\bootstrap-5.3.3\**" />
-	  <EmbeddedResource Remove="Contents\bootstrap-5.3.3\**" />
-	  <None Remove="Contents\bootstrap-5.3.3\**" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Remove="Contents\alpinejs\alpinejs.cdn.min.js" />
-		<None Remove="Contents\font-awesome.min.css" />
 		<None Remove="Contents\fonts\Inter\Inter_18pt-Regular.ttf" />
 		<None Remove="Contents\fonts\Inter\OFL.txt" />
 		<None Remove="Contents\fonts\Inter\README.txt" />
-		<None Remove="Contents\fonts\Roboto-Black.ttf" />
-		<None Remove="Contents\fonts\Roboto-Bold.ttf" />
-		<None Remove="Contents\fonts\Roboto-Light.ttf" />
-		<None Remove="Contents\fonts\Roboto-Medium.ttf" />
-		<None Remove="Contents\fonts\Roboto-Regular.ttf" />
-		<None Remove="Contents\fonts\Roboto-Thin.ttf" />
 		<None Remove="Contents\fonts\Roboto\LICENSE.txt" />
 		<None Remove="Contents\fonts\Roboto\Roboto-Regular.ttf" />
 		<None Remove="Contents\img\arrow.png" />
 		<None Remove="Contents\style.css" />
 		<None Remove="Contents\tailwind\tailwindcss-3.4.5.js" />
-		<None Remove="exapmle.trx" />
 		<None Remove="Templates\Index.cshtml" />
 	</ItemGroup>
 

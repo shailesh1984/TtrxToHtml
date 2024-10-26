@@ -52,6 +52,12 @@ public static class CommandLineArgumentsHelper
         AssemblyName assemblyName = assembly.GetName();
         Version version = assemblyName.Version!;
 
+        var versionString = Assembly.GetEntryAssembly()?
+                                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                                    .InformationalVersion
+                                    .ToString();
+
+        System.Console.WriteLine($"TtrxToHtml.Console v{versionString}");
         System.Console.WriteLine($"\n{assemblyName.Name}:");
         System.Console.WriteLine($" Version:    {version}");
         System.Console.WriteLine("\nRuntime Environment:");

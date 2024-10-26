@@ -1,14 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == ''">
+	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<PreserveCompilationContext>true</PreserveCompilationContext>
 		<Version>1.1.1</Version>
-		<TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
-		<TargetFrameworkVersion>8.0</TargetFrameworkVersion>
+		<!--<TargetFrameworkIdentifier>.NETCoreApp</TargetFrameworkIdentifier>
+		<TargetFrameworkVersion>8.0</TargetFrameworkVersion>-->
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ttrx</ToolCommandName>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -5,7 +5,12 @@ VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TtrxToHtml.Console", "TtrxToHtml.Console\TtrxToHtml.Console.csproj", "{9DF09736-DA91-4E38-BE19-A3430DAD525F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TtrxToHtml.Test", "..\tests\TtrxToHtml.Test\TtrxToHtml.Test.csproj", "{3BE5F692-0851-4017-A9A1-0AE6B20FBFFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TtrxToHtml.Test", "..\tests\TtrxToHtml.Test\TtrxToHtml.Test.csproj", "{3BE5F692-0851-4017-A9A1-0AE6B20FBFFB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{3A76F87F-97AB-4D4C-9D8E-3BE216CC3BB9}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

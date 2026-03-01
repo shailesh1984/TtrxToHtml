@@ -722,7 +722,7 @@
                                                                                                                     Ms
                                                                                                                 </span>
                                                                                                                 <span class="time pr-2">
-                                                                                                                    @ToExactTimeDuration(@slowestTest.Duration.TimeOfDay.ToString()).InMilliSeconds
+                                                                                                                    @((long)slowestTest.Duration.TimeOfDay.TotalMilliseconds)
                                                                                                                 </span>
                                                                                                                 <svg class="w-4 h-4 text-white-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                                                                                                                     <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
@@ -752,7 +752,7 @@
                                                                                                                                 <span class="label label-primary">Stacktrace</span>
                                                                                                                             </legend>
                                                                                                                             <div class="ml-1.5 mr-3">
-                                                                                                                                <p class="text-gray-900 whitespace-no-wrap">@slowestTest.Output.ErrorInfo.StackTrace</p>
+                                                                                                                                <pre class="text-gray-900 whitespace-pre-wrap">@slowestTest.Output.ErrorInfo.StackTrace</pre>
                                                                                                                             </div>
                                                                                                                         </fieldset>
                                                                                                                     </div>

@@ -1,4 +1,7 @@
-﻿namespace TtrxToHtml.Test;
+﻿using Microsoft.Extensions.Logging;
+using RazorLight;
+
+namespace TtrxToHtml.Test;
 
 public class GenerateTrxReportServiceTest
 {
@@ -6,19 +9,31 @@ public class GenerateTrxReportServiceTest
     public async Task GenerateTrxReportTest()
     {
         // ARRANGE
-        var appConfig = TestHelper.InitConfiguration();
-        string[] args = [$@"-f={Utility.TestDataFilePath()}"];
-        var commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appConfig, args);
+        AppSettings appConfig = TestHelper.InitConfiguration();
+        var args = new[] 
+        { 
+            "-f", 
+            Utility.TestDataFilePath() 
+        };
+        CommandLineInterfaceValues commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appConfig, args);
+
+        RazorLightEngine razorEngine = new RazorLightEngineBuilder()
+            .UseEmbeddedResourcesProject(typeof(TtrxToHtml.Console.Program).Assembly, "TtrxToHtml.Console.Templates")
+            .UseMemoryCachingProvider()
+            .Build();
+
+        ILogger<GenerateTrxReportService> logger = new LoggerFactory().CreateLogger<GenerateTrxReportService>();
+
+        GenerateTrxReportService generateTrxReportService = new GenerateTrxReportService(razorEngine, logger);
 
         // ACT
-        var generateTrxReportService = new GenerateTrxReportService();
-        var actual = await generateTrxReportService.ConvertTrxToHtmlAsync(appConfig, commandLineInterfaceValues);
+        TrxReport actual = await generateTrxReportService.ConvertTrxToHtmlAsync(appConfig, commandLineInterfaceValues);
 
         // ASSERT
         Assert.NotNull(actual);
         Assert.IsType<TrxReport>(actual);
 
-        var res = RegexHelper.DoesItContainsHtml(actual.Html!);
+        bool res = RegexHelper.DoesItContainsHtml(actual.Html!);
         Assert.True(res);
     }
 }

@@ -11,17 +11,20 @@ public static class CommandLineArgumentsHelper
     {
         var arguments = new Dictionary<string, string>();
 
-        foreach (var arg in args)
+        for (int i = 0; i < args.Length; i++)
         {
-            string[] parts = arg.Split('=');
-
-            if (parts.Length == 2)
+            if (args[i].StartsWith("-") || args[i].StartsWith("--"))
             {
-                arguments[parts[0]] = parts[1];
-            }
-            else
-            {
-                arguments[arg] = null!;
+                var key = args[i];
+                
+                if (i + 1 < args.Length && (!args[i + 1].StartsWith("-")) || !args[i].StartsWith("--"))
+                {
+                    arguments[key] = args[i + 1];
+                }
+                else
+                {
+                    arguments[key] = null!;
+                }
             }
         }
 
@@ -37,10 +40,10 @@ public static class CommandLineArgumentsHelper
         System.Console.WriteLine("Options:");
         System.Console.WriteLine("  -h|--help                                               Display help.");
         System.Console.WriteLine("  --info                                                  Display TtrxToHtml.Console Information.");
-        System.Console.WriteLine("  -d|--tdp=\"<directory-path>\"                             Specify trx directory path.");
-        System.Console.WriteLine("  -f|--tfp=\"<file-path>\"                                  Specify trx file path.");
-        System.Console.WriteLine("  -hfn=\"<file-name>\"|--html-file-name=\"<file-name>\"       Specify html file name.");
-        System.Console.WriteLine("  -o=\"<file-output-path>\"|--output=\"<file-output-path>\"   Specify output file.");
+        System.Console.WriteLine("  -d|--tdp \"<directory-path>\"                             Specify trx directory path.");
+        System.Console.WriteLine("  -f|--tfp \"<file-path>\"                                  Specify trx file path.");
+        System.Console.WriteLine("  -hfn \"<file-name>\"|--html-file-name \"<file-name>\"       Specify html file name.");
+        System.Console.WriteLine("  -o \"<file-output-path>\"|--output \"<file-output-path>\"   Specify output file.");
     }
 
     /// <summary>

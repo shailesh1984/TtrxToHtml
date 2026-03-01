@@ -1,4 +1,7 @@
-﻿namespace TtrxToHtml.Console;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace TtrxToHtml.Console;
 
 //[assembly: AssemblyVersionAttribute("1.0.0")]
 
@@ -9,33 +12,72 @@ public class Program
 {
     private static async Task Main(string[] args)
     {
-        var builder = new ConfigurationBuilder();
-        builder.SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        IHost host = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration((context, config) =>
+            {
+                config.SetBasePath(Directory.GetCurrentDirectory())
+                      .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            })
+            .ConfigureServices((context, services) =>
+            {
+                IConfiguration configuration = context.Configuration;
+                services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
-        IConfigurationRoot configuration = builder.Build();
+                RazorLightEngine razorEngine = new RazorLightEngineBuilder()
+                    .UseEmbeddedResourcesProject(typeof(Program).Assembly, "TtrxToHtml.Console.Templates")
+                    .UseMemoryCachingProvider()
+                    .Build();
 
-        var appSettings = new AppSettings();
-        configuration.GetSection("AppSettings").Bind(appSettings);
+                services.AddSingleton<RazorLightEngine>(razorEngine);
+                services.AddScoped<IGenerateTrxReportService, GenerateTrxReportService>();
+            })
+            .ConfigureLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+            })
+            .Build();
 
-        var commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appSettings, args);
+        using IServiceScope scope = host.Services.CreateScope();
+        IServiceProvider servicesProvider = scope.ServiceProvider;
+        ILogger<Program> logger = servicesProvider.GetRequiredService<ILogger<Program>>();
 
-        if (string.IsNullOrEmpty(commandLineInterfaceValues.TrxPath))
+        try
         {
-            return;
+            IConfiguration configuration = host.Services.GetRequiredService<IConfiguration>();
+            AppSettings appSettings = new AppSettings();
+            configuration.GetSection("AppSettings").Bind(appSettings);
+
+            CommandLineInterfaceValues commandLineInterfaceValues = CommandLineInterfaceHelper.ArgumentsHelper(appSettings, args);
+
+            if (string.IsNullOrEmpty(commandLineInterfaceValues.TrxPath))
+            {
+                logger.LogWarning("No trx path provided. Exiting.");
+                return;
+            }
+
+            IGenerateTrxReportService generateTrxReportService = servicesProvider.GetRequiredService<IGenerateTrxReportService>();
+            TrxReport trxReport = await generateTrxReportService.ConvertTrxToHtmlAsync(appSettings, commandLineInterfaceValues);
+            string testReportFile = await generateTrxReportService.CreateHtmlAsync(trxReport, appSettings, commandLineInterfaceValues);
+
+            logger.LogInformation("Opening generated report: {ReportPath}", testReportFile);
+
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = testReportFile,
+                UseShellExecute = true
+            };
+
+            Process.Start(startInfo);
         }
-
-        var serviceProvider = CreateServices();
-        var generateTrxReportService = serviceProvider.GetService<IGenerateTrxReportService>()!;
-        var trxReport = await generateTrxReportService.ConvertTrxToHtmlAsync(appSettings, commandLineInterfaceValues);
-        var testReportFile = await generateTrxReportService.CreateHtmlAsync(trxReport, appSettings, commandLineInterfaceValues);
-        Process.Start(@"cmd.exe ", $"/c \"{testReportFile}\"");
-    }
-
-    private static ServiceProvider CreateServices()
-    {
-        return new ServiceCollection()
-            .AddScoped<IGenerateTrxReportService, GenerateTrxReportService>()
-            .BuildServiceProvider();
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Unhandled exception while generating trx report.");
+            throw;
+        }
+        finally
+        {
+            await host.StopAsync();
+        }
     }
 }

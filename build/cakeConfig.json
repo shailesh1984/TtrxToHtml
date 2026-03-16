@@ -23,7 +23,7 @@
         "ResultsDirectory": "./test-results"
     },
     "GitHub": {
-        "Token": "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",
+        "Token": "",
         "RepoOwner": "shailesh1984",
         "RepoName": "TtrxToHtml",
         "ReleaseTagName": "v{0}"

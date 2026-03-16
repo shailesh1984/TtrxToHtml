@@ -15,20 +15,20 @@ public class Program
         IHost host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((context, config) =>
             {
-                config.SetBasePath(Directory.GetCurrentDirectory())
-                      .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                config.SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             })
             .ConfigureServices((context, services) =>
             {
                 IConfiguration configuration = context.Configuration;
                 services.Configure<AppSettings>(configuration.GetSection("AppSettings"));
 
-                RazorLightEngine razorEngine = new RazorLightEngineBuilder()
+                var razorEngine = new RazorLightEngineBuilder()
                     .UseEmbeddedResourcesProject(typeof(Program).Assembly, "TtrxToHtml.Console.Templates")
                     .UseMemoryCachingProvider()
                     .Build();
 
-                services.AddSingleton<RazorLightEngine>(razorEngine);
+                services.AddSingleton(razorEngine);
                 services.AddScoped<IGenerateTrxReportService, GenerateTrxReportService>();
             })
             .ConfigureLogging(logging =>

@@ -1,0 +1,31 @@
+{
+    "Config": {
+        "ProjectName": "TtrxToHtml",
+        "Author": "Shailesh M"
+    },
+    "Build": {
+        "BuildConfiguration": "Release",
+        "Runtime": "win-x64",
+        "Version": "0.1.0",
+        "SolutionFile": "./../src/TtrxToHtml.sln",
+        "ArtifactDirectory": "./artifacts",
+        "OutputDirectory": "/publish",
+        "ZipFileName": "/TtrxToHtml.zip",
+        "ExecutableName": "ttrx-to-html-{0}"
+    },
+    "Paths": {
+        "ReleaseNotes": "./release-notes.md",
+        "LogFile": "./logs/grm.log",
+        "TargetDirectory": "./artifacts/repo"
+    },
+    "Test": {
+        "TrxFileName": "ttrx-to-html-test-result-{0}.trx",
+        "ResultsDirectory": "./test-results"
+    },
+    "GitHub": {
+        "Token": "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",
+        "RepoOwner": "shailesh1984",
+        "RepoName": "TtrxToHtml",
+        "ReleaseTagName": "v{0}"
+    }
+}

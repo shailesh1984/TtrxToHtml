@@ -1,0 +1,26 @@
+// https://cakebuild.net/docs/running-builds/runners/dotnet-tool
+
+command execution steps : 
+dotnet nuget locals all --clear
+dotnet tool restore
+dotnet cake --bootstrap
+.\build.ps1  --config=cake.config
+
+
+Open a new PowerShell window and run the following command:
+./build.ps1
+
+
+all required tools install automatically:
+dotnet tool restore
+
+Run Cake:
+dotnet cake build.cake
+
+Check NuGet Source:
+dotnet nuget list source
+dotnet nuget locals all --clear
+
+Build : 
+dotnet cake build.cake --config=cake.config --settings_skippackageversioncheck=true
+.\build.ps1  --config=cake.config --settings_skippackageversioncheck=true

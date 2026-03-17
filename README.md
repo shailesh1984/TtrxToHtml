@@ -1,4 +1,4 @@
-# TRX to HTML Converter (TtrxToHtml)
+# Test TRX to HTML Converter (TtrxToHtml)
 
 Convert Visual Studio TRX test results into a cleaner, more readable HTML report.
 

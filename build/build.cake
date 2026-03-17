@@ -29,6 +29,7 @@
 // VARIABLES
 //////////////////////////////////////////////////////////////////////
 var target = Argument("target", "Default");
+//var target = Argument("target", "TrxToHtmlConverterRelease");
 var cakeConfigPath = "./cakeConfig.json";
 
 CakeConfig config;
@@ -117,10 +118,38 @@ Task("CreateReleaseNotes")
 .Does(() =>
 {
     Information("Create Release Notes started");
-    System.IO.File.WriteAllText(config.Paths.ReleaseNotes, $"Release version {config.Build.Version} of {config.Config.ProjectName} by {config.Config.Author}");
 
-    var inputFilePath = MakeAbsolute(File(config.Paths.ReleaseNotes)).FullPath;
-    Information($"InputFilePath: {inputFilePath}");
+    // Initial release note content
+    var header = $"Release version {config.Build.Version} of {config.Config.ProjectName} by {config.Config.Author}{Environment.NewLine}{Environment.NewLine}";
+    
+    System.IO.File.WriteAllText(config.Paths.ReleaseNotes, header);
+
+    var sourceFilePath = config.Paths.InputTextFile; 
+
+    if (System.IO.File.Exists(sourceFilePath))
+    {
+        // Read all content from source file
+        var content = System.IO.File.ReadAllText(sourceFilePath);
+
+        if (!string.IsNullOrWhiteSpace(content))
+        {
+            System.IO.File.AppendAllText(config.Paths.ReleaseNotes, content);
+            Information("Content appended to release notes");
+            System.IO.File.WriteAllText(sourceFilePath, string.Empty);
+            Information("Source text file cleared");
+        }
+        else
+        {
+            Information("Source text file is empty");
+        }
+    }
+    else
+    {
+        Warning($"Source file not found: {sourceFilePath}");
+    }
+
+    var outputFilePath = MakeAbsolute(File(config.Paths.ReleaseNotes)).FullPath;
+    Information($"ReleaseNotes Path: {outputFilePath}");
 });
 
 Task("CreateGitHubRelease")
@@ -163,6 +192,13 @@ Task("Publish-Release")
 });
 
 Task("Default")
+.IsDependentOn("Clean")
+.IsDependentOn("Restore")
+.IsDependentOn("Build")
+.IsDependentOn("Test")
+.IsDependentOn("Publish");
+
+Task("TrxToHtmlConverterRelease")
 .IsDependentOn("Clean")
 .IsDependentOn("Restore")
 .IsDependentOn("Build")

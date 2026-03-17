@@ -121,7 +121,8 @@ public partial class ResultSummaryOutput
 public partial class Results
 {
     [JsonProperty("UnitTestResult")]
-    public required UnitTestResult[] UnitTestResult { get; set; }
+    [JsonConverter(typeof(SingleOrArrayConverter<UnitTestResult>))]
+    public required List<UnitTestResult> UnitTestResult { get; set; }
 }
 
 public partial class UnitTestResult
@@ -184,7 +185,8 @@ public partial class ErrorInfo
 public partial class TestDefinitions
 {
     [JsonProperty("UnitTest")]
-    public UnitTest[] UnitTest { get; set; }
+    [JsonConverter(typeof(SingleOrArrayConverter<UnitTest>))]
+    public List<UnitTest> UnitTest { get; set; }
 }
 
 public partial class UnitTest
@@ -229,7 +231,8 @@ public partial class TestMethod
 public partial class TestEntries
 {
     [JsonProperty("TestEntry")]
-    public TestEntry[] TestEntry { get; set; }
+    [JsonConverter(typeof(SingleOrArrayConverter<TestEntry>))]
+    public List<TestEntry> TestEntry { get; set; }
 }
 
 public partial class TestEntry
@@ -247,7 +250,8 @@ public partial class TestEntry
 public partial class TestLists
 {
     [JsonProperty("TestList")]
-    public TestList[] TestList { get; set; }
+    [JsonConverter(typeof(SingleOrArrayConverter<TestList>))]
+    public List<TestList> TestList { get; set; }
 }
 
 public partial class TestList
@@ -329,30 +333,39 @@ public enum Outcome { Failed, Passed, Warn, NotExecuted, Executed, Error, Timeou
 
 public class SingleOrArrayConverter<T> : JsonConverter
 {
-    private readonly IContractResolver resolver;
+    private readonly IContractResolver _resolver;
 
     public SingleOrArrayConverter() : this(JsonSerializer.CreateDefault().ContractResolver) { }
 
     public SingleOrArrayConverter(IContractResolver resolver)
     {
         ArgumentNullException.ThrowIfNull(resolver);
-        this.resolver = resolver;
+        _resolver = resolver;
     }
 
-    public override bool CanConvert(Type objecType)
+    public override bool CanConvert(Type objectType)
     {
-        return (objecType == typeof(List<T>));
+        return objectType == typeof(List<T>) || objectType == typeof(T[]);
     }
 
-    public override object ReadJson(JsonReader reader, Type objecType, object existingValue,
-        JsonSerializer serializer)
+    public override object? ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
         JToken token = JToken.Load(reader);
+
         if (token.Type == JTokenType.Array)
         {
-            return token.ToObject<List<T>>();
+            return objectType == typeof(T[])
+                ? token.ToObject<T[]>()
+                : token.ToObject<List<T>>();
         }
-        return new List<T> { token.ToObject<T>() };
+
+        // wrap single object into array
+        var singleObject = token.ToObject<T>();
+
+        if (objectType == typeof(T[]))
+            return new T[] { singleObject! };
+
+        return new List<T> { singleObject! };
     }
 
     public override bool CanWrite
@@ -362,7 +375,7 @@ public class SingleOrArrayConverter<T> : JsonConverter
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-        throw new NotImplementedException();
+        serializer.Serialize(writer, value);
     }
 }
 
@@ -370,8 +383,8 @@ public static partial class JsonExtensions
 {
     public static JsonReader MoveToContentAndAssert(this JsonReader reader)
     {
-        if (reader == null)
-            throw new ArgumentNullException();
+        ArgumentNullException.ThrowIfNull(reader);
+
         if (reader.TokenType == JsonToken.None)       // Skip past beginning of stream.
             reader.ReadAndAssert();
         while (reader.TokenType == JsonToken.Comment) // Skip past comments.
@@ -381,8 +394,8 @@ public static partial class JsonExtensions
 
     public static JsonReader ReadAndAssert(this JsonReader reader)
     {
-        if (reader == null)
-            throw new ArgumentNullException();
+        ArgumentNullException.ThrowIfNull(reader);
+
         if (!reader.Read())
             throw new JsonReaderException("Unexpected end of JSON stream.");
         return reader;

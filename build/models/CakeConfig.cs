@@ -30,6 +30,7 @@ public class PathsConfig
     public string ReleaseNotes { get; set; }
     public string LogFile { get; set; }
     public string TargetDirectory { get; set; }
+    public string InputTextFile { get; set; }
 }
 
 public class TestConfig

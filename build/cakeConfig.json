@@ -1,12 +1,12 @@
 {
     "Config": {
-        "ProjectName": "TtrxToHtml",
+        "ProjectName": "trx-to-html-converter",
         "Author": "Shailesh M"
     },
     "Build": {
         "BuildConfiguration": "Release",
         "Runtime": "win-x64",
-        "Version": "0.1.0",
+        "Version": "0.1.1",
         "SolutionFile": "./../src/TtrxToHtml.sln",
         "ArtifactDirectory": "./artifacts",
         "OutputDirectory": "/publish",
@@ -16,7 +16,8 @@
     "Paths": {
         "ReleaseNotes": "./release-notes.md",
         "LogFile": "./logs/grm.log",
-        "TargetDirectory": "./artifacts/repo"
+        "TargetDirectory": "./artifacts/repo",
+        "InputTextFile": "./resources/release-notes-input.txt"
     },
     "Test": {
         "TrxFileName": "ttrx-to-html-test-result-{0}.trx",
@@ -25,7 +26,7 @@
     "GitHub": {
         "Token": "",
         "RepoOwner": "shailesh1984",
-        "RepoName": "TtrxToHtml",
+        "RepoName": "trx-to-html-converter",
         "ReleaseTagName": "v{0}"
     }
 }

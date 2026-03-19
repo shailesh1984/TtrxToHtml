@@ -1,4 +1,4 @@
-﻿namespace TtrxToHtml.Test;
+﻿namespace TtrxToHtml.Test.Helpers;
 
 /// <summary>
 /// https://learn.microsoft.com/en-us/dotnet/standard/base-types/regular-expression-source-generators?pivots=dotnet-8-0

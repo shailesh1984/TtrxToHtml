@@ -13,3 +13,4 @@ global using TtrxToHtml.Console.Helpers;
 global using TtrxToHtml.Console.Interfaces;
 global using TtrxToHtml.Console.Models;
 global using TtrxToHtml.Console.Service;
+global using Microsoft.Extensions.Logging;

@@ -1,4 +1,4 @@
-﻿namespace TtrxToHtml.Test;
+﻿namespace TtrxToHtml.Test.Helpers;
 
 public class Utility
 {

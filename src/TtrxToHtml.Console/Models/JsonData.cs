@@ -59,6 +59,9 @@ public partial class ResultSummary
 
     [JsonProperty("Output")]
     public ResultSummaryOutput Output { get; set; }
+
+    [JsonProperty("RunInfos")]
+    public RunInfos RunInfos { get; set; }
 }
 
 public partial class Counters
@@ -116,6 +119,28 @@ public partial class ResultSummaryOutput
 {
     [JsonProperty("StdOut")]
     public string StdOut { get; set; }
+}
+
+public partial class RunInfos
+{
+    [JsonProperty("RunInfo", NullValueHandling = NullValueHandling.Ignore)]
+    [JsonConverter(typeof(SingleOrArrayConverter<RunInfo>))]
+    public List<RunInfo> RunInfo { get; set; }
+}
+
+public partial class RunInfo
+{
+    [JsonProperty("@computerName")]
+    public string ComputerName { get; set; }
+
+    [JsonProperty("@outcome")]
+    public string Outcome { get; set; }
+
+    [JsonProperty("@timestamp")]
+    public DateTimeOffset TimeStamp { get; set; }
+
+    [JsonProperty("Text", NullValueHandling = NullValueHandling.Ignore)]
+    public string Text { get; set; }
 }
 
 public partial class Results
